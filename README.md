@@ -14,8 +14,7 @@ Contrary to CBOW, Continuous Skip Gram model is given the current word to predic
 The figure of Continuous Skip-Gram mode is shown as below.
 ![image](image/skip-gram.png)
 
-In this interface, we use gensim library to achieve it.
-(https://radimrehurek.com/gensim/models/word2vec.html)
+In this interface, we use gensim library to achieve it (https://radimrehurek.com/gensim/models/word2vec.html).
 
 ## Training Data
 App2Vec treats each app as a unit. And we use daily app usage data as our training data.
@@ -59,8 +58,7 @@ In this case, we can get the app2vec which name is app2vec.model.
 # ANN
 The objective of the nearest neighbor search is to find objects similar to the query point from a collection of objects. However, the processing cost is very high when the nearest neighbor search is applied to a high-dimensional data. For this reason, Approximate Nearest Neighbor(ANN) search is proposed to tackle this problem. ANN reduces the cost of processing greatly by sacrificing a little accuracy but get similar results to nearest neighbor search. ANN can be roughly categorized into two groups: Data Structure-based, Hash-based.
 
-In this interface, we use AnnoyIndex library to achieve it. AnnoyIndex is a hash-based ANN.
-(https://github.com/spotify/annoy)
+In this interface, we use AnnoyIndex library to achieve it. AnnoyIndex is a hash-based ANN (https://github.com/spotify/annoy).
 
 ### Function: `App2Vec.training_App2Vec`
 
@@ -101,8 +99,7 @@ Affinity Propagation is a unsupervised learning method which does not require th
 
 In order to find the exemplars for each cluster, Affinity Propagation takes a set of pairwise similarities as input and passes the messages between these pairwise data objects. In this training stage, Affinity Propagation updates two matrices  and .  represent the responsibility of each object. A higher value for the  of object in cluster  means that object would be a better exemplar for cluster .  represent the availability of each object. A higher value for the  of object in cluster  means that object would be likely to belong to cluster . This updating is executed iteratively until convergence. Once convergence is achieved, exemplars of each cluster are generated. Affinity Propagation outputs the final clusters.
 
-In this interface, we use Scikit-learn library to achieve it.
-(View more, https://radimrehurek.com/gensim/models/word2vec.html)
+In this interface, we use Scikit-learn library to achieve it (http://scikit-learn.org/stable/modules/generated/sklearn.cluster.AffinityPropagation.html).
 
 ### Function: `affinity_propagation`
 
