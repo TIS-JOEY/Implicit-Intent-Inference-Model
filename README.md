@@ -15,7 +15,7 @@ The figure of Continuous Skip-Gram mode is shown as below.
 ![image](image/skip-gram.png)
 
 In this interface, we use gensim library to achieve it.
-(View more,https://radimrehurek.com/gensim/models/word2vec.html)
+(https://radimrehurek.com/gensim/models/word2vec.html)
 
 ## Training Data
 App2Vec treats each app as a unit. And we use daily app usage data as our training data.
@@ -60,7 +60,7 @@ In this case, we can get the app2vec which name is app2vec.model.
 The objective of the nearest neighbor search is to find objects similar to the query point from a collection of objects. However, the processing cost is very high when the nearest neighbor search is applied to a high-dimensional data. For this reason, Approximate Nearest Neighbor(ANN) search is proposed to tackle this problem. ANN reduces the cost of processing greatly by sacrificing a little accuracy but get similar results to nearest neighbor search. ANN can be roughly categorized into two groups: Data Structure-based, Hash-based.
 
 In this interface, we use AnnoyIndex library to achieve it. AnnoyIndex is a hash-based ANN.
-(View more, https://github.com/spotify/annoy)
+(https://github.com/spotify/annoy)
 
 ### Function: `App2Vec.training_App2Vec`
 
