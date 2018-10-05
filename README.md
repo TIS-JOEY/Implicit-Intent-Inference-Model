@@ -24,7 +24,7 @@ So we provide the below function：
 `app2vec_model_path` = The storage location of App2Vec model.
 
 Raw data should be like...
-Each row is a app sequence which contains several apps.
+Each row has a app sequence which contains several apps.
 
 | app sequence1 |
 | :--- |
