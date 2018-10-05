@@ -11,6 +11,7 @@ CBOW model is given the context words to predict the center word in the window. 
 ### Continuous Skip-Gram
 Contrary to CBOW, Continuous Skip Gram model is given the current word to predict various individual context words in the window. Given the current word, the goal of Continuous Skip-Gram model is to maximize the log probability of context words.
 
+The figure of Continuous Skip-Gram mode is shown as below.
 ![image](image/skip-gram.png)
 
 In this interface, we use gensim library to achieve it.
@@ -49,7 +50,7 @@ app2vec.training_App2Vec(model_path = '/Users/apple/Documents/app2vec.model')
 In this case, we can get the app2vec which name is app2vec.model.
 
 # ANN
-The objective of the nearest neighbor search is to find objects similar to the query point from a collection of objects. However, the processing cost is very high when the nearest neighbor search is applied to a high-dimensional data. For this reason, Approximate Nearest Neighbor(ANN) search is proposed to tackle this problem. ANN reduces the cost of processing greatly by sacrificing a little accuracy but get similar results to nearest neighbor search. ANN can be roughly categorized into three groups (Fu and Cai, 2016): Data Structure-based, Hash-based.
+The objective of the nearest neighbor search is to find objects similar to the query point from a collection of objects. However, the processing cost is very high when the nearest neighbor search is applied to a high-dimensional data. For this reason, Approximate Nearest Neighbor(ANN) search is proposed to tackle this problem. ANN reduces the cost of processing greatly by sacrificing a little accuracy but get similar results to nearest neighbor search. ANN can be roughly categorized into two groups: Data Structure-based, Hash-based.
 
 In this interface, we use AnnoyIndex to achieve it. AnnoyIndex is a hash-based ANN.
 
