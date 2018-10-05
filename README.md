@@ -16,11 +16,25 @@ In this interface, we use gensim library to achieve it.
 ## Training Data
 App2Vec treats each app as a unit. And we use daily app usage data as our training data.
 Of course, it's impossible to train the raw data directly.
-So we provide the below function
-```text
-import app2vec
+So we provide the below function：
 
+```text
+import app2vec.App2Vec
+
+app2vec = App2Vec()
+app2vec.csv2training_data(raw_file_path = '/Users/apple/Documents/raw_data.csv')
+app2vec.training_App2Vec(model_path = '/Users/apple/Documents/app2vec.model')
 ```
+In this case, we can get the app2vec which name is app2vec.model.
+
+# ANN
+The objective of the nearest neighbor search is to find objects similar to the query point from a collection of objects. However, the processing cost is very high when the nearest neighbor search is applied to a high-dimensional data. For this reason, Approximate Nearest Neighbor(ANN) search is proposed to tackle this problem. ANN reduces the cost of processing greatly by sacrificing a little accuracy but get similar results to nearest neighbor search. ANN can be roughly categorized into three groups (Fu and Cai, 2016): Data Structure-based, Hash-based.
+
+In this interface, we use AnnoyIndex to achieve it. AnnoyIndex is a hash-based ANN.
+
+
+
+
 
 
 
