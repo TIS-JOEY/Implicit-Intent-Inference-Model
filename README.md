@@ -20,6 +20,7 @@ So we provide the below function：
 
 ### parameter
 `raw_file_path` = The storage location of your raw training data (Currently, we only support the csv file).
+
 `app2vec_model_path` = The storage location of App2Vec model.
 
 ```text
@@ -38,7 +39,9 @@ In this interface, we use AnnoyIndex to achieve it. AnnoyIndex is a hash-based A
 
 ### parameter
 `dim` = the Dimension of App2Vec.
+
 `num_tree` = The number of trees of your ANN forest. More tress more accurate.
+
 `ann_model_path` = The storage path of ANN model.
 
 ```text
