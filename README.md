@@ -11,7 +11,7 @@ CBOW model is given the context words to predict the center word in the window. 
 ### Continuous Skip-Gram
 Contrary to CBOW, Continuous Skip Gram model is given the current word to predict various individual context words in the window. Given the current word, the goal of Continuous Skip-Gram model is to maximize the log probability of context words.
 
-![image](image/skig-gram.png)
+![image](image/skip-gram.png)
 
 In this interface, we use gensim library to achieve it (https://radimrehurek.com/gensim/models/word2vec.html).
 
