@@ -24,7 +24,7 @@ So we provide the below function：
 ### Function parameter
 Function: `App2Vec.csv2training_data`
 
-Goal: Prepeare the training data of App2Vec.
+`Goal` : Prepeare the training data of App2Vec.
 
 `raw_file_path` = The storage location of your raw training data (Currently, we only support the csv file).
 
@@ -62,13 +62,13 @@ In this interface, we use AnnoyIndex library to achieve it. AnnoyIndex is a hash
 
 ### Function: `App2Vec.training_App2Vec`
 
-Goal: Train the App2Vec model.
+`Goal`: Train the App2Vec model.
 
 `app2vec_model_path` = The storage path of App2Vec model.
 
 ### Function: `App2Vec.ANN`
 
-Goal: Train the ANN model.
+`Goal`: Train the ANN model.
 
 `dim` = the Dimension of App2Vec.
 
@@ -103,7 +103,7 @@ In this interface, we use Scikit-learn library to achieve it (http://scikit-lear
 
 ### Function: `affinity_propagation`
 
-Goal: Train the Affinity Propagation model.
+`Goal`: Train the Affinity Propagation model.
 
 `app2vec_model_path` = The storage path of App2Vec model.
 
@@ -113,7 +113,7 @@ Goal: Train the Affinity Propagation model.
 
 ### Function: `get_label2id`
 
-Goal: Build the mapping of AF labels and app sequences.
+`Goal`: Build the mapping of AF labels and app sequences.
 
 `af_model_path` = The storage path of Affinity Propagation model.
 
