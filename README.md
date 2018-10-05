@@ -19,8 +19,8 @@ Of course, it's impossible to train the raw data directly.
 So we provide the below function：
 
 ### parameter
-raw_file_path = The storage location of your raw training data (Currently, we only support the csv file).
-model_path = The storage location of App2Vec model.
+`raw_file_path` = The storage location of your raw training data (Currently, we only support the csv file).
+`app2vec_model_path` = The storage location of App2Vec model.
 
 ```text
 import app2vec.App2Vec
@@ -37,9 +37,9 @@ The objective of the nearest neighbor search is to find objects similar to the q
 In this interface, we use AnnoyIndex to achieve it. AnnoyIndex is a hash-based ANN.
 
 ### parameter
-dim = the Dimension of App2Vec.
-num_tree = The number of trees of your ANN forest. More tress more accurate.
-ann_model_path = The storage path of ANN model.
+`dim` = the Dimension of App2Vec.
+`num_tree` = The number of trees of your ANN forest. More tress more accurate.
+`ann_model_path` = The storage path of ANN model.
 
 ```text
 import app2vec.App2Vec
