@@ -58,7 +58,8 @@ class App2Vec:
 		num_tree：The number of trees of your ANN forest. More tress more accurate.
 		ann_model_path：The storage path of ANN model.
 		'''
-
+		
+		#View more, go to https://github.com/spotify/annoy.
 		from annoy import AnnoyIndex
 
 		#load app2vec model.
