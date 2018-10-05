@@ -23,6 +23,7 @@ So we provide the below function：
 
 `app2vec_model_path` = The storage location of App2Vec model.
 
+### Usage
 ```text
 import app2vec.App2Vec
 
@@ -44,6 +45,7 @@ In this interface, we use AnnoyIndex to achieve it. AnnoyIndex is a hash-based A
 
 `ann_model_path` = The storage path of ANN model.
 
+### Usage
 ```text
 import app2vec.App2Vec
 
