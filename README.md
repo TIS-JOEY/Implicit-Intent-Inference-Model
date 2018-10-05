@@ -26,12 +26,12 @@ So we provide the below function：
 Raw data should be like...
 Each row is a app sequence which contains several apps.
 
-| \app sequence1 |
-| :--- |
+| app sequence1 |
 | app sequence2 |
 | app sequence3 |
 | app sequence4 |
 | app sequence5 |
+| ... |
 
 
 ### Usage
