@@ -48,7 +48,11 @@ Goal: Train the App2Vec model.
 import app2vec.App2Vec
 
 app2vec = App2Vec()
+
+# Prepare the training data of App2Vec.
 app2vec.csv2training_data(raw_file_path = '/Users/apple/Documents/raw_data.csv')
+
+# Train the App2Vec model.
 app2vec.training_App2Vec(app2vec_model_path = '/Users/apple/Documents/app2vec.model')
 ```
 In this case, we can get the app2vec which name is app2vec.model.
@@ -73,8 +77,14 @@ Goal: Train the ANN model
 import app2vec.App2Vec
 
 app2vec = App2Vec()
+
+# Prepare the training data of App2Vec.
 app2vec.csv2training_data(raw_file_path = '/Users/apple/Documents/raw_data.csv')
+
+# Train the App2Vec model.
 app2vec.training_App2Vec(model_path = '/Users/apple/Documents/app2vec.model')
+
+# Train the ANN model.
 app2vec.ANN(dim = 64,num_tree = 10000,app2vec_model_path = '/Users/apple/Documents/app2vec.model',ann_model_path = '/Users/apple/Documents/ANN.model')
 ```
 
@@ -95,7 +105,7 @@ Goal: Train the Affinity Propagation model.
 
 ### Function `get_label2id`
 
-Goal: Build the mapping between Affinity Propagation's labels and app sequences.
+Goal: Build the mapping between Affinity Propagation's labels and app sequences (Store in a object attribute which name is label2id).
 
 `af_model_path` = The storage location of Affinity Propagation model.
 
@@ -103,9 +113,20 @@ Goal: Build the mapping between Affinity Propagation's labels and app sequences.
 import app2vec.App2Vec
 
 app2vec = App2Vec()
+
+# Prepare the training data of App2Vec.
 app2vec.csv2training_data(raw_file_path = '/Users/apple/Documents/raw_data.csv')
+
+# Train the App2VApp2Vec model.
 app2vec.training_App2Vec(model_path = '/Users/apple/Documents/app2vec.model')
+
+# Train the ANN model.
 app2vec.ANN(dim = 64,num_tree = 10000,app2vec_model_path = '/Users/apple/Documents/app2vec.model',ann_model_path = '/Users/apple/Documents/ANN.model')
+
+# Train the affinity propagation model
+app2vec.affinity_propagation(app2vec_model_path = '/Users/apple/Documents/app2vec.model',af_model_path = '/Users/apple/Documents/NewAFCluster.pkl',prefer = -30)
+
+# Build the mapping between Affinity Propagation's labels and app sequences.
 app2vec.get_label2id(af_model_path = '/Users/apple/Documents/AFCluster.pkl')
 ```
 
