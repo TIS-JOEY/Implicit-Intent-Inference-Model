@@ -106,7 +106,9 @@ In this interface, we use Scikit-learn library to achieve it (http://scikit-lear
 Goal: Train the Affinity Propagation model.
 
 `app2vec_model_path` = The storage path of App2Vec model.
+
 `af_model_path` = The storage path of Affinity Propagation model.
+
 `prefer` = The preference of Affinity Propagation model.
 
 ### Function: `get_label2id`
