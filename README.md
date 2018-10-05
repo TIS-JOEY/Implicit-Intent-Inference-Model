@@ -62,14 +62,13 @@ The objective of the nearest neighbor search is to find objects similar to the q
 In this interface, we use AnnoyIndex library to achieve it. AnnoyIndex is a hash-based ANN.
 (View more, https://github.com/spotify/annoy)
 
-### Function parameter
-Function: `App2Vec.training_App2Vec`
+### Function: `App2Vec.training_App2Vec`
 
 Goal: Train the App2Vec model.
 
 `app2vec_model_path` = The storage path of App2Vec model.
 
-Function: `App2Vec.ANN`
+### Function: `App2Vec.ANN`
 
 Goal: Train the ANN model.
 
@@ -105,16 +104,15 @@ In order to find the exemplars for each cluster, Affinity Propagation takes a se
 In this interface, we use Scikit-learn library to achieve it.
 (View more, https://radimrehurek.com/gensim/models/word2vec.html)
 
-### parameter
+### Function: `affinity_propagation`
 
 Goal: Train the Affinity Propagation model.
 
-Function: `affinity_propagation`
 `app2vec_model_path` = The storage path of App2Vec model.
 `af_model_path` = The storage path of Affinity Propagation model.
 `prefer` = The preference of Affinity Propagation model.
 
-Function: `get_label2id`
+### Function: `get_label2id`
 
 Goal: Build the mapping of AF labels and app sequences.
 
