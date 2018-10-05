@@ -23,6 +23,17 @@ So we provide the below function：
 
 `app2vec_model_path` = The storage location of App2Vec model.
 
+Raw data should be like...
+Each row is a app sequence which contains several apps.
+
+| \app sequence1 |
+| :--- |
+| app sequence2 |
+| app sequence3 |
+| app sequence4 |
+| app sequence5 |
+
+
 ### Usage
 ```text
 import app2vec.App2Vec
