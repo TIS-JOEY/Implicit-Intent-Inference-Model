@@ -17,7 +17,10 @@ In this interface, we use gensim library to achieve it.
 App2Vec treats each app as a unit. And we use daily app usage data as our training data.
 Of course, it's impossible to train the raw data directly.
 So we provide the below function
+```text
+import app2vec
 
+```
 
 
 
