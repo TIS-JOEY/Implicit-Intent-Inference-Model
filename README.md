@@ -20,6 +20,13 @@ App2Vec treats each app as a unit. And we use daily app usage data as our traini
 Of course, it's impossible to train the raw data directly.
 So we provide the below function：
 
+## Class processData.processData
+
+`mapping_path`：The file which stores the mapping of id and app_name.
+`stop_app_path`：The file which stores the stop app. These stop apps won't treat as the training data for App2Vec.
+`ignore_all`：True is full cut mode, False is select cut mode.
+    
+    
 ### Function: `processData.processData.csv2training_data`
 
 Goal: Prepare the training data of App2Vec.
@@ -73,6 +80,8 @@ Each row is an app sequence which contains several apps.
 | app sequence6 |
 
 ## Training
+## Class app2vec.App2Vec
+
 ### Function: `App2Vec.training_App2Vec`
 
 Goal: Train the App2Vec model.
