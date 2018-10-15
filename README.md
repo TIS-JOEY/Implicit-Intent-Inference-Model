@@ -1,4 +1,4 @@
-# App2Vec_Python
+# Build-and-Evaluate-App2Vec-ANN-Affinity-Porpagation
 This interface allows you to easily build the App2Vec model and other related advanced models(including ANN, Affinity Propagation). Moreover, we also provide the evaluating function for optimizing these model.
 
 # Background
