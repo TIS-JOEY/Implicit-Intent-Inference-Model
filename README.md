@@ -225,4 +225,3 @@ Goal: Evaluate the ANN model.
 `dim`: The dim of App2Vec.
 `app2vec_model_path` = The storage path of app2vec model.
 `ann_model_path` = The storage path of ANN model.
-
