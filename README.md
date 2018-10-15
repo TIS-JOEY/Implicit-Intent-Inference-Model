@@ -1,6 +1,51 @@
 # App2Vec_Python
 This interface allows you to easily build the App2Vec model and other related advanced models(including ANN, Affinity Propagation).
 
+# Usage
+```text
+import app2vec.App2Ve
+import AF.AF
+import ann.ANN
+import processData.processData
+
+# Prepare the data of App2Vec
+p_data = processData(mapping_path = 'mapping.csv')
+p_data.csv2App2Vec_training_data(raw_file_path = 'raw_data.csv')
+p_data.save(write_file_path = 'training_data.txt')
+
+# Train the app2vec model
+app2vec = App2Vec()
+app2vec.load_training_data(raw_file_path = 'training_data.txt')
+app2vec.training_App2Vec(app2vec_model_path = 'app2vec.model')
+
+# Prepare the data for evaluating App2Vec
+X,y = p_data.csv2evaluate_App2Vec_training_data(raw_file_path = 'app2vec_evaluate_raw_data.csv')
+
+# Evaluate the app2vec model
+app2vec = App2Vec()
+app2vec.grid_app2vec(X = X,y = y,app2vec_model_path = 'app2vec.model')
+
+app2vec.show_app2vec(app2vec_model_path = 'app2vec.model')
+
+# Train the ANN model
+ann = ANN(app2vec_model_path = 'app2vec.model')
+ann.train_ANN(dim = 90,num_tree = 10000,,ann_model_path = 'ann.model')
+
+# Prepare the data for evaluating ANN
+X,y = p_data.csv2evaluate_ANN_training_data(raw_file_path = 'raw_data.csv')
+
+# Evaluate the ANN model
+ann.evaluate_ann(X = X,y = y,dim = 90,app2vec_model_path = 'app2vec.model',ann_model_path = 'ann.model')
+
+# Train the Affinity Propagation model
+training_data = app2vec.load_training_data(raw_file_path = 'training_data.txt')
+AF_model = AF(app2vec_model_path = 'app2vec.model',training_data = training_data)
+AF_model.affinity_propagation(af_model_path = 'NewAFCluster.pkl',prefer = -30)
+
+# Build the mapping between Affinity Propagation's labels and app sequences.
+app2vec.get_label2id(af_model_path = 'AFCluster.pkl')
+```
+
 ## App2Vec
 App2Vec is an unsupervised learning method to embed words into a dense vector space. In this dense vector space, semantically and syntactically related words are close to each other. App2Vec uses a shallow neural network that is trained to learn the distribution representation of words. In basic, Word2Vec is a single layer neural network with one hidden layer. Both input and output are represented as the One-Hot encoding. The learned vector of words is stored as input-hidden layer weight matrix.
 
@@ -131,54 +176,33 @@ Goal: Train the Affinity Propagation model.
 
 `prefer` = The preference of Affiniry Propagation model.
 
-### Function `AF.get_label2id`
+### Function `AF.AF.get_label2id`
 
 Goal: Build the mapping between Affinity Propagation's labels and app sequences (Store in a object attribute which name is label2id).
 
 `af_model_path` = The storage location of Affinity Propagation model.
 
-## Usage
-```text
-import app2vec.App2Ve
-import AF.AF
-import ann.ANN
-import processData.processData
+# Evaluate
+### Function `app2vec.App2Vec.show_app2vec`
 
-# Prepare the data of App2Vec
-p_data = processData(mapping_path = 'mapping.csv')
-p_data.csv2App2Vec_training_data(raw_file_path = 'raw_data.csv')
-p_data.save(write_file_path = 'training_data.txt')
+Goal: make a plot of the app2vec model.
 
-# Train the app2vec model
-app2vec = App2Vec()
-app2vec.load_training_data(raw_file_path = 'training_data.txt')
-app2vec.training_App2Vec(app2vec_model_path = 'app2vec.model')
+`app2vec_model_path` = The storage path of app2vec model.
 
-# Prepare the data for evaluating App2Vec
-X,y = p_data.csv2evaluate_App2Vec_training_data(raw_file_path = 'app2vec_evaluate_raw_data.csv')
+### Function `app2vec.App2Vec.grid_app2vec`
 
-# Evaluate the app2vec model
-app2vec = App2Vec()
-app2vec.grid_app2vec(X = X,y = y,app2vec_model_path = 'app2vec.model')
+Goal: Find the best parmaters of App2Vec by GridSearchCV.
 
-app2vec.show_app2vec(app2vec_model_path = 'app2vec.model')
+`X`: Training data, each cell is an app sequence
+`y`: Label, each cell is whether apps in its corssponding X are related to each other or not.
+`app2vec_model_path` = The storage path of app2vec model.
 
-# Train the ANN model
-ann = ANN(app2vec_model_path = 'app2vec.model')
-ann.train_ANN(dim = 90,num_tree = 10000,,ann_model_path = 'ann.model')
+### Function `ann.ANN.evaluate_ann`
 
-# Prepare the data for evaluating ANN
-X,y = p_data.csv2evaluate_ANN_training_data(raw_file_path = 'raw_data.csv')
+Goal: Evaluate the ANN model.
 
-# Evaluate the ANN model
-ann.evaluate_ann(X = X,y = y,dim = 90,app2vec_model_path = 'app2vec.model',ann_model_path = 'ann.model')
-
-# Train the Affinity Propagation model
-training_data = app2vec.load_training_data(raw_file_path = 'training_data.txt')
-AF_model = AF(app2vec_model_path = 'app2vec.model',training_data = training_data)
-AF_model.affinity_propagation(af_model_path = 'NewAFCluster.pkl',prefer = -30)
-
-# Build the mapping between Affinity Propagation's labels and app sequences.
-app2vec.get_label2id(af_model_path = 'AFCluster.pkl')
-```
-
+`X`: Training data, each cell is an app.
+`y`: Label, each cell is an app sequence which is related to the corssponding X.
+`dim`: The dim of App2Vec.
+`app2vec_model_path` = The storage path of app2vec model.
+`ann_model_path` = The storage path of ANN model.
