@@ -39,6 +39,24 @@ Each row is an app sequence which contains several apps.
 
 ### Function: `processData.processData.csv2evaluate_App2Vec_training_data`
 
+Goal: Prepare the training data for evaluating ANN model.
+
+`raw_file_path` = The storage location of your raw training data (Currently, we only support the csv file).
+
+The raw data is a csv file which should be like as below:
+Each row contians an app sequence and the corrsponding label.
+The label represents whether apps in this app sequence is related to each other.
+
+| app | app sequence1 |
+| --- | -- |
+| app | app sequence2 |
+| app | app sequence3 |
+| app | label2 |
+| app sequence5 | label1 |
+| app sequence6 | label2 |
+
+### Function: `processData.processData.csv2evaluate_ANN_training_data`
+
 Goal: Prepare the training data for evaluating App2Vec model.
 
 `raw_file_path` = The storage location of your raw training data (Currently, we only support the csv file).
@@ -46,13 +64,13 @@ Goal: Prepare the training data for evaluating App2Vec model.
 The raw data is a csv file which should be like as below:
 Each row is an app sequence which contains several apps.
 
-| app sequence1 | label1 |
-| --- | -- |
-| app sequence2 | label2 |
-| app sequence3 | label1 |
-| app sequence4 | label2 |
-| app sequence5 | label1 |
-| app sequence6 | label2 |
+| app sequence1 |
+| --- |
+| app sequence2 |
+| app sequence3 |
+| app sequence4 |
+| app sequence5 |
+| app sequence6 |
 
 ### Function: `App2Vec.training_App2Vec`
 
