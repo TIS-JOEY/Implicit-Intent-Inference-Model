@@ -15,7 +15,7 @@ Contrary to CBOW, Continuous Skip Gram model is given the current word to predic
 
 In this interface, we use gensim library to achieve it (https://radimrehurek.com/gensim/models/word2vec.html).
 
-## Training Data
+## Prepare Training Data
 App2Vec treats each app as a unit. And we use daily app usage data as our training data.
 Of course, it's impossible to train the raw data directly.
 So we provide the below function：
@@ -72,6 +72,7 @@ Each row is an app sequence which contains several apps.
 | app sequence5 |
 | app sequence6 |
 
+## Training
 ### Function: `App2Vec.training_App2Vec`
 
 Goal: Train the App2Vec model.
@@ -97,8 +98,11 @@ The objective of the nearest neighbor search is to find objects similar to the q
 
 In this interface, we use AnnoyIndex library to achieve it. AnnoyIndex is a hash-based ANN (https://github.com/spotify/annoy).
 
-### Function `ANN`
+### Class `ann.ANN`
 
+`app2vec_model_path` = The storage path of app2vec model.
+
+## Function `ann.ANN.train_ANN`
 Goal: Train the ANN model
 
 `dim` = the Dimension of App2Vec.
@@ -128,7 +132,13 @@ Affinity Propagation is a unsupervised learning method which does not require th
 
 In this interface, we use  Scikit-Learn library to achieve it (http://scikit-learn.org/stable/modules/generated/sklearn.cluster.AffinityPropagation.html).
 
-### Function `affinity_propagation`
+## Class AF.AF
+
+`app2vec_model_path` = The storage path of app2vec model.
+
+`training_data` = The training data of AF model.
+
+### Function `AF.AF.affinity_propagation`
 
 Goal: Train the Affinity Propagation model.
 
@@ -138,7 +148,7 @@ Goal: Train the Affinity Propagation model.
 
 `prefer` = The preference of Affiniry Propagation model.
 
-### Function `get_label2id`
+### Function `AF.get_label2id`
 
 Goal: Build the mapping between Affinity Propagation's labels and app sequences (Store in a object attribute which name is label2id).
 
