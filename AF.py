@@ -14,7 +14,7 @@ class AF:
 		self.app2vec_model = App2Vec.load_App2Vec(app2vec_model_path)
 		self.label2id = collections.defaultdict(list)
 
-	def affinity_propagation(self,app2vec_model_path,af_model_path,prefer):
+	def affinity_propagation(self,af_model_path,prefer):
 
 		#get the vector of app2vec.
 		vector = self.app2vec_model.wv.syn0

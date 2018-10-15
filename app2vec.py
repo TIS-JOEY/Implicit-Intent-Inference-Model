@@ -15,10 +15,11 @@ class App2Vec:
 		self.training_data = []
 
 	# load the training data for App2vec.
-	def load_training_data(self,raw_data_path):
-		rf = open(raw_data_path,'rb')
+	def load_training_data(self,raw_file_path):
+		rf = open(raw_file_path,'rb')
 		self.training_data = pickle.load(rf)
 		rf.close()	
+		return self.training_data
 			
 	#Train the app2vec.
 	def training_App2Vec(self,app2vec_model_path):
