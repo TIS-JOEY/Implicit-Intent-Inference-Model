@@ -71,7 +71,7 @@ AF_model.affinity_propagation(af_model_path = 'NewAFCluster.pkl',prefer = -30)
 # Build the mapping between Affinity Propagation's labels and app sequences.
 app2vec.get_label2id(af_model_path = 'AFCluster.pkl')
 ```
-
+# Detail
 # Prepare Training Data
 App2Vec treats each app as a unit. And we use daily app usage data as our training data.
 Of course, it's impossible to train the raw data directly.
