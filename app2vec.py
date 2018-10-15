@@ -1,57 +1,24 @@
 from gensim.models import Word2Vec
-import pandas as pd
-import numpy as np
-from sklearn.externals import joblib
 import pickle
-import collections
-
+import matplotlib.pyplot as plt
+from sklearn.manifold import TSNE
+import app2vecEstimator
+from sklearn.model_selection import GridSearchCV, KFold
 
 class App2Vec:
-	def __init__(self,stop_app_path = []):
+	def __init__(self):
 		'''
-		training_data：Store the training data
-		stop_app：Store the stop app. These stop apps won't treat as the training data for App2Vec.
+		training_data：Store the training data.
 		label2id：Store the mapping with cluster labels and app sequences.
 		'''
+
 		self.training_data = []
-		self.stop_app = []
-		self.label2id = collections.defaultdict(list)
 
-		if stop_app_path:
-			with open(stop_app_path,'r') as f:
-				self.stop_app = f.read().split('\n')
-
-	# half ignore process mode..
-	def ignore_all_get_app(self,each_app_seq):
-		each_app_list = each_app_seq.split()
-		result = []
-		for app in each_app_list:
-			if app in self.stop_app:
-				return []
-			else:
-				result.append(app)
-		return [result]
-
-	# provide the training data for App2Vec.
-	def csv2training_data(self,raw_file_path,ignore_all = True):
-		'''
-		file_path：The storage location of your raw training data.
-		ignore_all(Optional)：Ignore mode，True is Full ignore mode，False is half ignore mode.
-		'''
-
-		df = pd.read_csv(raw_file_path,header = None)
-
-		for index,each_app_seq in df.iterrows():
-
-			#Full ignore mode
-			if ignore_all:
-				for each_app_list in (map(self.ignore_all_get_app, each_app_seq.tolist())):
-					self.training_data.extend(each_app_list)
-			
-			#Half ignore mode
-			else:
-				self.training_data.append([app for ele_app_list in each_app_seq.tolist() for app in each_app_list.split(' ') if app not in stop_app])
-		
+	# load the training data for App2vec.
+	def load_training_data(self,raw_data_path):
+		rf = open(raw_data_path,'rb')
+		self.training_data = pickle.load(rf)
+		rf.close()	
 			
 	#Train the app2vec.
 	def training_App2Vec(self,app2vec_model_path):
@@ -60,81 +27,65 @@ class App2Vec:
 		'''
 
 		#Views more, https://radimrehurek.com/gensim/models/word2vec.html
-		model = Word2Vec(self.training_data,sg=1,size = 64,window = 3,seed = 0,min_count = 0,iter = 10,compute_loss=True)
+		model = Word2Vec(self.training_data,sg=1,size = 95,window = 3,seed = 0,min_count = 0,iter = 1000000,compute_loss=True)
 
 		#save the model
 		model.save(app2vec_model_path)
 
-	#Train the ANN
-	def ANN(self,dim,num_tree,app2vec_model_path,ann_model_path):
+	def load_App2Vec(self,app2vec_model_path):
 		'''
-		dim = the Dimension of App2Vec.
-		num_tree：The number of trees of your ANN forest. More tress more accurate.
-		ann_model_path：The storage path of ANN model.
+		Load the app2vec model.
+		'''
+		model = Word2Vec.load(app2vec_model_path)
+		return model
+
+	def show_app2vec(self,app2vec_model_path):
+		'''
+		make a plot of the app2vec model.
 		'''
 
-		#View more, https://github.com/spotify/annoy.
-		from annoy import AnnoyIndex
-
-		#load app2vec model.
 		app2vec_model = Word2Vec.load(app2vec_model_path)
+		X = app2vec_model[app2vec_model.wv.vocab]
 
-		#get the vector of app2vec.
-		vector = app2vec_model.wv.syn0
-		
-		t = AnnoyIndex(dim)
-		
-		for i in app2vec_model.wv.vocab:
-			#get the mapping id.
-			index = app2vec_model.wv.vocab[str(i)].index
-
-			#add the mapping.
-			t.add_item(index,vector[index])
-
-		#train the app2vec. num_tree is the number of your ANN forest.
-		t.build(num_tree)
-
-		#save the model
-		t.save(ann_model_path)
-
-	def affinity_propagation(self,app2vec_model_path,af_model_path,prefer):
-		#View more, go to http://scikit-learn.org/stable/modules/generated/sklearn.cluster.AffinityPropagation.html.
-		from sklearn.cluster import AffinityPropagation
-
-		#load app2vec model.
-		app2vec_model = Word2Vec.load(app2vec_model_path)
-
-		#get the vector of app2vec.
-		vector = app2vec_model.wv.syn0
-
-		#store the training data of AF.
-		af_training_data = []
-
-		#average the vector of each app sequence as a unit
-		for app_seq in self.training_data:
-			af_training_data.append(np.mean([app2vec_model[app] for app in app_seq],0))
-
-		# train the af model.
-		af_model = AffinityPropagation(preference = prefer).fit(af_training_data)
-
-		# save the model
-		joblib.dump(af_model, af_model_path)
+		word_labels = [app2vec_model.wv.index2word[i] for i in range(len(X))]
 
 
-	def get_label2id(self,af_model_path):
-		# load af model
-		af = joblib.load(af_model_path)
+		tsne = TSNE(n_components = 3)
+		X_tsne = tsne.fit_transform(X)
 
-		# build a label2id dictionary
-		for index,label in enumerate(af.labels_):
-			self.label2id[label].append(index)
+		plt.scatter(X_tsne[:,0], X_tsne[:,1])
+
+		for label,x,y in zip(word_labels,X_tsne[:,0], X_tsne[:,1]):
+			plt.annotate(label,xy = (x, y), xytext = (0,0), textcoords = 'offset points')
+		plt.xlim(X_tsne[:,0].min()+0.00005, X_tsne[:,0].max()+0.00005)
+		plt.ylim(X_tsne[:,1].min()+0.00005, X_tsne[:,1].max()+0.00005)
+		plt.show()
+
+	def grid_app2vec(self,X,y,app2vec_model_path):
+		'''
+		Find the best paramters for app2vec model.
+		'''
 
 		
-		
-if __name__ == "__main__":
-	app2vec = App2Vec()
-	app2vec.csv2training_data(raw_file_path = '/Users/apple/Documents/paper/raw_data.csv')
-	app2vec.training_App2Vec(app2vec_model_path = '/Users/apple/Documents/app2vec.model')
-	app2vec.ANN(dim = 64,num_tree = 10000,app2vec_model_path = '/Users/apple/Documents/app2vec.model',ann_model_path = '/Users/apple/Documents/ANN.model')
-	app2vec.affinity_propagation(app2vec_model_path = '/Users/apple/Documents/app2vec.model',af_model_path = '/Users/apple/Documents/NewAFCluster.pkl',prefer = -30)
-	app2vec.get_label2id(af_model_path = '/Users/apple/Documents/AFCluster.pkl')
+		param = {
+			'size' : [i for i in range(50,200,10)],
+			'window' : [5,10],
+		}
+
+		inner_cv = KFold(n_splits=5, shuffle=True, random_state=42)
+
+		gsearch = GridSearchCV(app2vecEstimator.app2vec_estimator(X,size = 90,window = 3,min_count = 0), param_grid = param, scoring = 'accuracy', cv = inner_cv)
+		gsearch.fit(X,y)
+
+		print("CV_Result：")
+		print("="*10)
+		print(gsearch.cv_results_)
+		print("="*10)
+		print()
+		print("Best_params：")
+		print("="*10)
+		print(gsearch.best_params_)
+		print()
+		print("Best score：")
+		print("="*10)
+		print(gsearch.best_score_)
