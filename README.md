@@ -15,7 +15,7 @@ Contrary to CBOW, Continuous Skip Gram model is given the current word to predic
 
 In this interface, we use gensim library to achieve it (https://radimrehurek.com/gensim/models/word2vec.html).
 
-## Prepare Training Data
+# Prepare Training Data
 App2Vec treats each app as a unit. And we use daily app usage data as our training data.
 Of course, it's impossible to train the raw data directly.
 So we provide the below function：
@@ -79,7 +79,7 @@ Each row is an app sequence which contains several apps.
 | app sequence5 |
 | app sequence6 |
 
-## Training
+# Training
 ## Class app2vec.App2Vec
 
 ### Function: `App2Vec.training_App2Vec`
