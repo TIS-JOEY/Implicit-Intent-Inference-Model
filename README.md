@@ -1,5 +1,5 @@
 # App2Vec_Python
-This interface allows you to easily build the App2Vec model and other related advanced models(including ANN, Affinity Propagation).
+This interface allows you to easily build the App2Vec model and other related advanced models(including ANN, Affinity Propagation). Moreover, we also provide the evaluating function for optimizing these model.
 
 # Background
 ## App2Vec
