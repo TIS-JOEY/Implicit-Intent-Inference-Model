@@ -34,39 +34,63 @@ import AF.AF
 import ann.ANN
 import processData.processData
 
+
 # Prepare the data of App2Vec
 p_data = processData(mapping_path = 'mapping.csv')
 p_data.csv2App2Vec_training_data(raw_file_path = 'raw_data.csv')
 p_data.save(write_file_path = 'training_data.txt')
+
+
+
 
 # Train the app2vec model
 app2vec = App2Vec()
 app2vec.load_training_data(raw_file_path = 'training_data.txt')
 app2vec.training_App2Vec(app2vec_model_path = 'app2vec.model')
 
+
+
+
 # Prepare the data for evaluating App2Vec
 X,y = p_data.csv2evaluate_App2Vec_training_data(raw_file_path = 'app2vec_evaluate_raw_data.csv')
+
+
+
 
 # Evaluate the app2vec model
 app2vec = App2Vec()
 app2vec.grid_app2vec(X = X,y = y,app2vec_model_path = 'app2vec.model')
-
 app2vec.show_app2vec(app2vec_model_path = 'app2vec.model')
+
+
+
 
 # Train the ANN model
 ann = ANN(app2vec_model_path = 'app2vec.model')
 ann.train_ANN(dim = 90,num_tree = 10000,,ann_model_path = 'ann.model')
 
+
+
+
 # Prepare the data for evaluating ANN
 X,y = p_data.csv2evaluate_ANN_training_data(raw_file_path = 'raw_data.csv')
 
+
+
+
 # Evaluate the ANN model
 ann.evaluate_ann(X = X,y = y,dim = 90,app2vec_model_path = 'app2vec.model',ann_model_path = 'ann.model')
+
+
+
 
 # Train the Affinity Propagation model
 training_data = app2vec.load_training_data(raw_file_path = 'training_data.txt')
 AF_model = AF(app2vec_model_path = 'app2vec.model',training_data = training_data)
 AF_model.affinity_propagation(af_model_path = 'NewAFCluster.pkl',prefer = -30)
+
+
+
 
 # Build the mapping between Affinity Propagation's labels and app sequences.
 app2vec.get_label2id(af_model_path = 'AFCluster.pkl')
