@@ -54,10 +54,10 @@ The raw data is a csv file which should be like as below:
 Each row contians an app sequence and the corrsponding label.
 The label represents whether apps in this app sequence is related to each other.
 
-| app | app sequence1 |
+| app | label1  |
 | --- | -- |
-| app | app sequence2 |
-| app | app sequence3 |
+| app | label2 |
+| app | label1  |
 | app | label2 |
 | app sequence5 | label1 |
 | app sequence6 | label2 |
