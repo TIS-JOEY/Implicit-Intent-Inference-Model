@@ -20,7 +20,7 @@ App2Vec treats each app as a unit. And we use daily app usage data as our traini
 Of course, it's impossible to train the raw data directly.
 So we provide the below function：
 
-### Function: `App2Vec.csv2training_data`
+### Function: `processData.processData.csv2training_data`
 
 Goal: Prepare the training data of App2Vec.
 
@@ -36,6 +36,23 @@ Each row is an app sequence which contains several apps.
 | app sequence4 |
 | app sequence5 |
 | app sequence6 |
+
+### Function: `processData.processData.csv2evaluate_App2Vec_training_data`
+
+Goal: Prepare the training data for evaluating App2Vec model.
+
+`raw_file_path` = The storage location of your raw training data (Currently, we only support the csv file).
+
+The raw data is a csv file which should be like as below:
+Each row is an app sequence which contains several apps.
+
+| app sequence1 | label1 |
+| --- | -- |
+| app sequence2 | label2 |
+| app sequence3 | label1 |
+| app sequence4 | label2 |
+| app sequence5 | label1 |
+| app sequence6 | label2 |
 
 ### Function: `App2Vec.training_App2Vec`
 
