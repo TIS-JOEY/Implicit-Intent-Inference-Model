@@ -1,5 +1,5 @@
-# Build-and-Evaluate-App2Vec-ANN-Affinity-Porpagation
-This interface allows you to easily build the App2Vec model and other related advanced models(including ANN, Affinity Propagation). Moreover, we also provide the evaluating function for optimizing these model.
+# Implicit-Intent-Inference-Model
+This interface are for processing multi-implicit-intent. It allows you to easily build eight different models (including ANN-based model, Affinity Propagation-based model, ANN-based model with Doc2Vec, Affinity Propagation-based with Doc2Vec, BILSTM-ANN-based model, BILSTM-ANN-based model with Doc2Vec, BILSTM-Affinity Propagation based model, BILSTM-Affinity Propagation based model with Doc2Vec). Moreover, we also provide the evaluating function for optimizing these model.
 
 # Background
 ## App2Vec
@@ -21,7 +21,6 @@ The objective of the nearest neighbor search is to find objects similar to the q
 
 In this interface, we use AnnoyIndex library to achieve it. AnnoyIndex is a hash-based ANN (https://github.com/spotify/annoy).
 
-
 ## Affinity Propagation
 Affinity Propagation is a unsupervised learning method which does not require the pre-defined number of clusters. It can automatically find a collection of objects which are representative of clusters and discover the number of clusters. In order to find the exemplars for each cluster, Affinity Propagation takes a set of pairwise similarities as input and passes the messages between these pairwise data objects. In this training stage, Affinity Propagation updates two matrices  and .  represent the responsibility of each object. A higher value for the  of object in cluster  means that object would be a better exemplar for cluster .  represent the availability of each object. A higher value for the  of object in cluster  means that object would be likely to belong to cluster . This updating is executed iteratively until convergence. Once convergence is achieved, exemplars of each cluster are generated. Affinity Propagation outputs the final clusters.
 
@@ -32,7 +31,7 @@ In this interface, we use  Scikit-Learn library to achieve it (http://scikit-lea
 ```
 import IMIP_Model.Training.Model
 
-# Train App2Vec
+# -*- Train App2Vec -*-
 ap = App2Vec()
 
 param = {
@@ -50,5 +49,12 @@ training_App2Vec('data/Model/app2vec.model')
 
 # Make plot for our App2Vec model.
 show_App2Vec('data/Model/app2vec.model')
+
+# -*- Train ANN
+ann = ANN(app2vec_model_path = 'data/Model/app2vec.model',ann_model_path = 'data/Model/ann_model.ann',max_len = 5)
+# With Doc2Vec, set doc to True.
+# With BILSTM, set lstm to True.
+# and vice versa.
+ann.ANN(num_tree = range(10000,20000,1000),for_evaluate = True,doc = True,lstm = True)
 
 ```
