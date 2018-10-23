@@ -45,15 +45,11 @@ p_data.setup_training_data(save = True)
 # -*- Train App2Vec -*-
 ap = App2Vec()
 
-param = {
-        'size' : range(95,121,5),
-        'iter' : range(10000,20000,1000),
-        'window' : range(3,5,1)
-        }
-
 # Currently we only can show the plot of iter and size.
 # Find the best parameters for App2Vec.
-ap.grid_app2vec(param)
+ap.grid_app2vec(size = range(95,101,5),
+		iter = range(1,6,5),
+		window = range(4,5,1))
 
 # After finding, we can train out App2Vec model.
 training_App2Vec('data/Model/app2vec.model')
