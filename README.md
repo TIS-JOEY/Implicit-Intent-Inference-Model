@@ -35,13 +35,13 @@ import IMIP_Model.Training.Model
 ## Prepare Training data
 ```
 p_data = processData()
+
+# just one line, then all set.
 p_data.setup_training_data(save = True)
 ```
 
 ## App2Vec
 ```
-
-
 # -*- Train App2Vec -*-
 ap = App2Vec()
 
