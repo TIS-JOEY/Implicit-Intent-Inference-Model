@@ -26,6 +26,10 @@ Affinity Propagation is a unsupervised learning method which does not require th
 
 In this interface, we use  Scikit-Learn library to achieve it (http://scikit-learn.org/stable/modules/generated/sklearn.cluster.AffinityPropagation.html).
 
+# Require
+Download GoogleNews word2vec --> https://github.com/mmihaltz/word2vec-GoogleNews-vectors.
+After unzipping it, put it to 'data/Model/' directory.
+
 # Usage
 ## Import
 ```
