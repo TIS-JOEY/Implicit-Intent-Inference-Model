@@ -28,6 +28,7 @@ In this interface, we use  Scikit-Learn library to achieve it (http://scikit-lea
 
 # Usage
 
+## App2Vec
 ```
 import IMIP_Model.Training.Model
 
@@ -51,12 +52,14 @@ training_App2Vec('data/Model/app2vec.model')
 show_App2Vec('data/Model/app2vec.model')
 ```
 
+## BILSTM
 ``` 
 # -*- Train BILSTM
 bilstm = BILSTM(app2vec_model_path = 'data/Model/app2vec.model',max_len = 5)
 bilstm.get_model(epochs = 50,batch_size = 30)
-
 ```
+
+## ANN
 ```
 # -*- Train ANN
 ann = ANN(app2vec_model_path = 'data/Model/app2vec.model',ann_model_path = 'data/Model/ann_model.ann',max_len = 5)
@@ -73,7 +76,7 @@ ann.ANN(num_tree = range(10000,20000,1000),
 # After finding, we can train our ANN model.
 ann.ANN(num_tree = 18000,for_evaluate = False)
 ```
-
+## Affinity Propagation
 ``` 
 # -*- Train Affinity Propagation
 af = AF(app2vec_model_path = 'data/training_data/app2vec.model',max_len = 5,af_model_path = 'data/Model/af_model.pkl')
