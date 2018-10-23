@@ -49,12 +49,45 @@ training_App2Vec('data/Model/app2vec.model')
 
 # Make plot for our App2Vec model.
 show_App2Vec('data/Model/app2vec.model')
+```
 
+``` 
+# -*- Train BILSTM
+bilstm = BILSTM(app2vec_model_path = 'data/Model/app2vec.model',max_len = 5)
+bilstm.get_model(epochs = 50,batch_size = 30)
+
+```
+```
 # -*- Train ANN
 ann = ANN(app2vec_model_path = 'data/Model/app2vec.model',ann_model_path = 'data/Model/ann_model.ann',max_len = 5)
+
+# Goal: Find the best parameters
 # With Doc2Vec, set doc to True.
 # With BILSTM, set lstm to True.
 # and vice versa.
-ann.ANN(num_tree = range(10000,20000,1000),for_evaluate = True,doc = True,lstm = True)
+ann.ANN(num_tree = range(10000,20000,1000),
+        for_evaluate = True,
+        doc = True,
+        lstm = True)
 
+# After finding, we can train our ANN model.
+ann.ANN(num_tree = 18000,for_evaluate = False)
+```
+
+``` 
+# -*- Train Affinity Propagation
+af = AF(app2vec_model_path = 'data/training_data/app2vec.model',max_len = 5,af_model_path = 'data/Model/af_model.pkl')
+
+# Goal: Find the best parameters
+# With Doc2Vec, set doc to True.
+# With BILSTM, set lstm to True.
+# and vice versa.
+af.AF(max_iter = range(1000,4001,1000),
+      preference = range(-10,-41,-10), 
+      for_evaluate = True,
+      lstm = False, 
+      doc = False)
+ 
+# After finding, we can train our AF model.
+af.AF(max_iter = 4000,preference = -30,for_evaluate = False)
 ```
