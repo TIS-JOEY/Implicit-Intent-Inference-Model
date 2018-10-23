@@ -33,7 +33,7 @@ After unzipping it, put it to 'data/Model/' directory.
 # Usage
 ## Import
 ```
-import IMIP_Model.Training.Model
+Execute Training/Model.py
 ```
 
 ## Prepare Training data
