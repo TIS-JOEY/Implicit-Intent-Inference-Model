@@ -85,7 +85,7 @@ ann.ANN(num_tree = 18000,for_evaluate = False)
 ## Affinity Propagation
 ``` 
 # -*- Train Affinity Propagation
-af = AF(app2vec_model_path = 'data/training_data/app2vec.model',max_len = 5,af_model_path = 'data/Model/af_model.pkl')
+af = AF(app2vec_model_path = 'data/Model/app2vec.model',max_len = 5,af_model_path = 'data/Model/af_model.pkl')
 
 # Goal: Find the best parameters
 # With Doc2Vec, set doc to True.
