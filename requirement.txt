@@ -1,0 +1,7 @@
+pandas
+gensim
+keras
+numpy
+annoy
+scikit-learn
+nltk
