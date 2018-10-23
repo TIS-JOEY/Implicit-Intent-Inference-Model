@@ -52,10 +52,10 @@ ap.grid_app2vec(size = range(95,101,5),
 		window = range(4,5,1))
 
 # After finding, we can train out App2Vec model.
-training_App2Vec('data/Model/app2vec.model')
+ap.training_App2Vec('data/Model/app2vec.model')
 
 # Make plot for our App2Vec model.
-show_App2Vec('data/Model/app2vec.model')
+ap.show_App2Vec('data/Model/app2vec.model')
 ```
 
 ## BILSTM
