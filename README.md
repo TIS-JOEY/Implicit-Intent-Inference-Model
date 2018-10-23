@@ -27,10 +27,20 @@ Affinity Propagation is a unsupervised learning method which does not require th
 In this interface, we use  Scikit-Learn library to achieve it (http://scikit-learn.org/stable/modules/generated/sklearn.cluster.AffinityPropagation.html).
 
 # Usage
+## Import
+```
+import IMIP_Model.Training.Model
+```
+
+## Prepare Training data
+```
+p_data = processData()
+p_data.setup_training_data(save = True)
+```
 
 ## App2Vec
 ```
-import IMIP_Model.Training.Model
+
 
 # -*- Train App2Vec -*-
 ap = App2Vec()
