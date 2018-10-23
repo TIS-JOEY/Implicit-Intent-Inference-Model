@@ -74,7 +74,7 @@ ann = ANN(app2vec_model_path = 'data/Model/app2vec.model',ann_model_path = 'data
 # With Doc2Vec, set doc to True.
 # With BILSTM, set lstm to True.
 # and vice versa.
-ann.ANN(num_tree = range(10000,20000,1000),
+ann.ANN(num_tree = range(10000,20001,10000),
         for_evaluate = True,
         doc = True,
         lstm = True)
