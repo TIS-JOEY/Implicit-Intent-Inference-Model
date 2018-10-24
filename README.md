@@ -31,7 +31,7 @@ Download GoogleNews word2vec --> https://github.com/mmihaltz/word2vec-GoogleNews
 After unzipping it, put it to 'data/Model/' directory.
 
 # Usage
-## Import
+## Execute
 ```
 Execute Training/Model.py
 ```
