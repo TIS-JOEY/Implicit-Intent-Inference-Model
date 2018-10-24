@@ -74,7 +74,6 @@ class processData:
 			df = pd.read_csv(mapping_path,header = None)
 			self.app2id = dict([row.tolist()[0].split(';') for index,row in df.iterrows()])
 			self.id2app = {v: k for k, v in self.app2id.items()}
-			print(self.id2app)
 
 	# load the training data for App2vec.
 	def load_training_data(self,raw_data_path):
