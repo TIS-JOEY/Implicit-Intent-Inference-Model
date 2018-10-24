@@ -658,7 +658,6 @@ class WordSemantic:
 		
 		# Calculate the cosine similarity
 		score = 1 - spatial.distance.cosine(text1, text2)
-		print(score)
 
 		return score
 
@@ -761,6 +760,10 @@ class AF(processData,BILSTM,WordSemantic):
 
 					# Count the total number
 					total_num+=len(y)
+
+				print('max_iter = ',max_iter_param)
+				print('preference = ',preference_param)
+				print('accuracy = ',sum/total_num)
 				
 
 				# Record the accuracy.
@@ -834,6 +837,10 @@ class AF(processData,BILSTM,WordSemantic):
 					# Count the total number
 					total_num+=len(y)
 
+				print('max_iter = ',max_iter_param)
+				print('preference = ',preference_param)
+				print('accuracy = ',sum/total_num)
+
 				# Record the accuracy.
 				cv_result[max_iter_param].append((preference_param,sum/(total_num)))
 					
@@ -900,6 +907,10 @@ class AF(processData,BILSTM,WordSemantic):
 
 					# Count the total number
 					total_num+=len(y)
+
+				print('max_iter = ',max_iter_param)
+				print('preference = ',preference_param)
+				print('accuracy = ',sum/total_num)
 					
 
 				# Record the accuracy.
@@ -974,6 +985,10 @@ class AF(processData,BILSTM,WordSemantic):
 
 					# Count the total number
 					total_num+=len(y)
+
+				print('max_iter = ',max_iter_param)
+				print('preference = ',preference_param)
+				print('accuracy = ',sum/total_num)
 
 				# Record the accuracy.
 				cv_result[max_iter_param].append((preference_param,sum/(total_num)))
