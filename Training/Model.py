@@ -850,7 +850,7 @@ class AF(processData,BILSTM,WordSemantic):
 	def evaluate_AF_BILSTM(self,max_iter,preference,for_evaluate):
 		
 		# Prepare the training and testing data
-		X_train,X_test,y_train,y_test = self.prepare_BI_LSTM_training_data(self.app2vec_model,test_size = 0.9)
+		X_train,X_test,y_train,y_test = self.prepare_BI_LSTM_training_data(self.app2vec_model,test_size = 0.3)
 
 		#store the training data of AF.
 		af_training_data = []
@@ -922,7 +922,7 @@ class AF(processData,BILSTM,WordSemantic):
 	def evaluate_AF_BILSTM_doc(self,max_iter,preference,for_evaluate):
 
 		# Prepare the training and testing data
-		X_train,X_test,y_train,y_test,X_text = self.prepare_BI_LSTM_training_doc_data(self.app2vec_model,test_size = 0.9)
+		X_train,X_test,y_train,y_test,X_text = self.prepare_BI_LSTM_training_doc_data(self.app2vec_model,test_size = 0.3)
 
 		# get the vector of app2vec.
 		vector = self.app2vec_model.wv.syn0
@@ -1222,7 +1222,7 @@ class ANN(processData,BILSTM,WordSemantic):
 	def evaluate_ANN_BILSTM(self,num_trees,for_evaluate):
 
 		# Prepare the training and testing data
-		X_train,X_test,y_train,y_test = self.prepare_BI_LSTM_training_data(self.app2vec_model,test_size = 0.9)
+		X_train,X_test,y_train,y_test = self.prepare_BI_LSTM_training_data(self.app2vec_model,test_size = 0.3)
 
 		# Train BILSTM model
 		BI_LSTM_model = self.train_BILSTM(X_train,y_train,for_evaluate = for_evaluate)
@@ -1283,7 +1283,7 @@ class ANN(processData,BILSTM,WordSemantic):
 	def evaluate_ANN_BILSTM_doc(self,num_trees,for_evaluate):
 
 		# Prepare the training and testing data
-		X_train,X_test,y_train,y_test,X_text = self.prepare_BI_LSTM_training_doc_data(self.app2vec_model,test_size = 0.9)
+		X_train,X_test,y_train,y_test,X_text = self.prepare_BI_LSTM_training_doc_data(self.app2vec_model,test_size = 0.3)
 
 		# Train BILSTM model
 		BI_LSTM_model = self.train_BILSTM(X_train,y_train,for_evaluate = for_evaluate)
@@ -1355,5 +1355,6 @@ class ANN(processData,BILSTM,WordSemantic):
 		plt.ylabel('% accuracy')
 		plt.xlabel('num_tress')
 		plt.show()
+
 		
 		
