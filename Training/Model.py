@@ -963,7 +963,7 @@ class AF(processData,BILSTM,WordSemantic):
 					vector_predict = BI_LSTM_model.predict(X)
 
 					# The predicted label
-					predict_label = af_model.predict(vector)
+					predict_label = af_model.predict(vector_predict)
 
 					# Get the candididate apps
 					candidiates = list(set(self.label2app[predict_label[0]]))
