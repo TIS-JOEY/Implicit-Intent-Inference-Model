@@ -242,18 +242,4 @@ class BI_LSTM_CRF:
 		    if w != 0:
 		        print("{:15}: {:5} {}".format(self.id2word[str(w-1)], self.id2tag[str(t)], self.id2tag[str(pred)]))
 
-					
-
-if __name__=="__main__":
-	p_data = processData()
-	#p_data.processAns()
-	p_data.loadParameters()
-	training_data,word2id,id2word,tag2id,id2tag = p_data.getParameters()
-
-	BL_CRF = BI_LSTM_CRF(training_data,word2id,id2word,tag2id,id2tag)
-	#model = BL_CRF.get_model('BI_LSTM_CRF_CNN_model.h5')
-	model = BL_CRF.load_model('BI_LSTM_CRF_CNN_model.h5')
-	BL_CRF.evaluate(model)
-	BL_CRF.predict()
-
-
+			
