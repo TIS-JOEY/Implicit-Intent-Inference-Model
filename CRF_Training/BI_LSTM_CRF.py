@@ -209,20 +209,3 @@ class BI_LSTM_CRF:
 		    if w != 0:
 		        print("{:15}: {:5} {}".format(self.id2word[w-1], self.id2tag[t], self.id2tag[pred]))
 
-					
-
-if __name__=="__main__":
-	p_data = processData()
-	#p_data.processAns()
-	p_data.loadParameters()
-	training_data,word2id,id2word,tag2id,id2tag = p_data.getParameters()
-	#print([tuple(j) for i in training_data for j in i])
-	#BL_CRF = BI_LSTM_CRF(training_data,word2id,id2word,tag2id,id2tag)
-	#model = BL_CRF.get_model('BI_LSTM_CRF_model.h5')
-	#model = BL_CRF.load_model('BI_LSTM_CRF_model.h5')
-	#BL_CRF.evaluate(model)
-	#BL_CRF.predict()
-
-	#
-	#[[('我','B'),('是','I'),('誰','O')],[('我','B'),('是','I'),('誰','O')]]
-
