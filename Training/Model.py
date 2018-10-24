@@ -1328,32 +1328,4 @@ class ANN(processData,BILSTM,WordSemantic):
 		plt.ylabel('% accuracy')
 		plt.xlabel('num_tress')
 		plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
-if __name__ == "__main__":
-	# -*- Train Affinity Propagation
-	af = AF(app2vec_model_path = 'data/Model/app2vec.model',max_len = 5,af_model_path = 'data/Model/af_model.pkl')
-
-	# Goal: Find the best parameters
-	# With Doc2Vec, set doc to True.
-	# With BILSTM, set lstm to True.
-	# and vice versa.
-	af.AF(max_iter = [10000],
-	      preference = range(-20,-31,-10), 
-	      for_evaluate = True,
-	      lstm = False, 
-	      doc = False)
-	 
-	# After finding, we can train our AF model.
-	#af.AF(max_iter = 4000,preference = -30,for_evaluate = False)
-
+		
