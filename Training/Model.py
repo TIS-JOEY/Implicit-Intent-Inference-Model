@@ -269,11 +269,11 @@ class processData:
 
 			# Transfer to Index
 			t_index = list(map(lambda x:self.app2vec_model.wv.vocab[x].index+1,data))
-			'''
+			
 			half = len(data)//2
 			X.append([t_index[:half],self.text[index]])
 			y.append(data[half:])
-			'''
+			
 			'''
 			for j in range(len(data)):
 				X.append([t_index[j],self.text[index]])
@@ -770,7 +770,7 @@ class AF(processData,BILSTM,WordSemantic):
 	def evaluate_af_doc(self,max_iter,preference):
 
 		# Load Testing data
-		X,y = self.training_data_without_doc()
+		X,y = self.training_data_with_doc()
 
 		#store the training data of AF.
 		af_training_data = []
