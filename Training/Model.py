@@ -450,7 +450,6 @@ class App2Vec(processData):
 		label2id：Store the mapping with cluster labels and app sequences.
 		'''
 		super().__init__()
-		print(self.id2app)
 
 	#----App2Vec----
 	def training_App2Vec(self,app2vec_model_path,sg=1,size = 95,window = 3,seed = 0,min_count = 0,iter = 20000,compute_loss=True):
