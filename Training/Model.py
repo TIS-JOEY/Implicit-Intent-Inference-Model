@@ -222,7 +222,7 @@ class processData:
 			each_X = []
 
 			for i in row['data'].split():
-				if i not in self.goal_app:
+				if self.id2app[i] not in self.goal_app:
 					each_X = []
 					break
 				each_X.append(self.id2app[i])
@@ -490,8 +490,6 @@ class App2Vec(processData):
 		plt.show()
 
 	def grid_app2vec(self,**param):
-		print(self.id2app)
-		return
 		'''
 		Find the best paramters for app2vec model.
 		'''
@@ -1359,3 +1357,4 @@ class ANN(processData,BILSTM,WordSemantic):
 		plt.ylabel('% accuracy')
 		plt.xlabel('num_tress')
 		plt.show()
+		
