@@ -17,6 +17,9 @@ import json
 # Plot
 import matplotlib.pyplot as plt
 from sklearn.manifold import TSNE
+import matplotlib as mpl
+import matplotlib.dates as mdates
+from mpl_toolkits.mplot3d import Axes3D
 
 # Evaluating
 from sklearn.model_selection import train_test_split
@@ -470,22 +473,35 @@ class App2Vec(processData):
 		return model
 
 	def show_app2vec(self,app2vec_model_path):
-		app2vec_model = self.load_App2Vec(app2vec_model_path)
-		X = app2vec_model[app2vec_model.wv.vocab]
+		model = self.load_App2Vec(app2vec_model_path)
+		"Creates and TSNE model and plots it"
+		labels = []
+		tokens = []
 
-		word_labels = [app2vec_model.wv.index2word[i] for i in range(len(X))]
+		for word in model.wv.vocab:
+			tokens.append(model[word])
+			labels.append(word)
+		
+		tsne_model = TSNE(perplexity=40, n_components=2, init='pca', n_iter=2500, random_state=23)
+		new_values = tsne_model.fit_transform(tokens)
 
-
-		tsne = TSNE(n_components = 3)
-		X_tsne = tsne.fit_transform(X)
-
-		plt.scatter(X_tsne[:,0], X_tsne[:,1])
-
-		for label,x,y in zip(word_labels,X_tsne[:,0], X_tsne[:,1]):
-			plt.annotate(label,xy = (x, y), xytext = (0,0), textcoords = 'offset points')
-		plt.xlim(X_tsne[:,0].min()+0.00005, X_tsne[:,0].max()+0.00005)
-		plt.ylim(X_tsne[:,1].min()+0.00005, X_tsne[:,1].max()+0.00005)
+		x = []
+		y = []
+		for value in new_values:
+			x.append(value[0])
+			y.append(value[1])
+			
+		plt.figure(figsize=(16, 16)) 
+		for i in range(len(x)):
+			plt.scatter(x[i],y[i])
+			plt.annotate(labels[i],
+						 xy=(x[i], y[i]),
+						 xytext=(5, 2),
+						 textcoords='offset points',
+						 ha='right',
+						 va='bottom')
 		plt.show()
+
 
 	def grid_app2vec(self,**param):
 		'''
@@ -504,7 +520,13 @@ class App2Vec(processData):
 		gsearch.fit(X,y)
 		print('done')
 
-		self.plot_grid_search(gsearch.cv_results_,param['iter'],param['size'],'iteration','size')
+		print(param['iter'])
+		print(param['size'])
+		print(param['window'])
+		print(gsearch.cv_results_['mean_test_score'].reshape(len(param['iter']),len(param['size']),len(param['window'])))
+		self.plot2(gsearch.cv_results_,param['iter'],param['size'],param['window'])
+		self.plot_grid_search(gsearch.cv_results_,param['size'],param['window'],'size','window')
+
 		print("CV_Result：")
 		print("="*10)
 		print(gsearch.cv_results_)
@@ -719,7 +741,7 @@ class AF(processData,BILSTM,WordSemantic):
 
 		# Get Testing data
 		X_train,X_test,y_train,y_test = train_test_split(X,y, test_size=0.9, random_state=0, shuffle = True)
-		
+
 		# Recording the performance
 		cv_result = collections.defaultdict(list)
 
@@ -776,7 +798,7 @@ class AF(processData,BILSTM,WordSemantic):
 
 		# Load Testing data
 		X,y = self.training_data_with_doc()
-
+		print(X)
 		#store the training data of AF.
 		af_training_data = []
 
@@ -923,9 +945,6 @@ class AF(processData,BILSTM,WordSemantic):
 
 		# Prepare the training and testing data
 		X_train,X_test,y_train,y_test,X_text = self.prepare_BI_LSTM_training_doc_data(self.app2vec_model,test_size = 0.3)
-
-		# get the vector of app2vec.
-		vector = self.app2vec_model.wv.syn0
 
 		#store the training data of AF.
 		af_training_data = []
@@ -1355,4 +1374,3 @@ class ANN(processData,BILSTM,WordSemantic):
 		plt.ylabel('% accuracy')
 		plt.xlabel('num_tress')
 		plt.show()
-		
