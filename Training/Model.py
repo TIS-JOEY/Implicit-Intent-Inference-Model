@@ -249,6 +249,7 @@ class processData:
 			X.append(data[:half])
 			y.append(i[half:])
 			
+			
 			'''
 			for j in range(len(i)):
 				X.append([data[j]])
@@ -1041,10 +1042,10 @@ class ANN(processData,BILSTM,WordSemantic):
 
 		for i in self.app2vec_model.wv.vocab:
 			#get the mapping id.
-			index = self.app2vec_model.wv.vocab[i].index + 1
+			index = self.app2vec_model.wv.vocab[i].index
 
 			#add the mapping.
-			ann_model.add_item(index,vector[index-1])
+			ann_model.add_item(index,vector[index])
 
 		#train the app2vec. num_tree is the number of your ANN forest.
 		ann_model.build(num_tree)
@@ -1099,10 +1100,10 @@ class ANN(processData,BILSTM,WordSemantic):
 			for app_seq_id in range(len(X_test)):
 
 				# Get their neighbor and flat it to 1D.
-				nbrs = list(itertools.chain.from_iterable([ann_model.get_nns_by_item(index,10) for index in X_test[app_seq_id]]))
-				
+				nbrs = list(itertools.chain.from_iterable([ann_model.get_nns_by_item(index-1,10) for index in X_test[app_seq_id]]))
+
 				# transfer to app
-				nbrs = [self.app2vec_model.wv.index2word[nbr-1] for nbr in nbrs]
+				nbrs = [self.app2vec_model.wv.index2word[nbr] for nbr in nbrs]
 
 				counter = collections.Counter(nbrs)
 
@@ -1165,10 +1166,10 @@ class ANN(processData,BILSTM,WordSemantic):
 				self.shared_dict = dict()
 
 				# Get their neighbor and flat it to 1D.
-				nbrs = list(itertools.chain.from_iterable([ann_model.get_nns_by_item(index,10) for index in X_test_data[app_seq_id]]))
+				nbrs = list(itertools.chain.from_iterable([ann_model.get_nns_by_item(index - 1,10) for index in X_test_data[app_seq_id]]))
 
 				# Transfer to app
-				nbr_app = [self.app2vec_model.wv.index2word[nbr-1] for nbr in nbrs]
+				nbr_app = [self.app2vec_model.wv.index2word[nbr] for nbr in nbrs]
 
 				for nbr_id in range(len(nbr_app)):
 					# Calculate the semantic score
@@ -1228,7 +1229,7 @@ class ANN(processData,BILSTM,WordSemantic):
 				nbrs = ann_model.get_nns_by_vector(vector_predict,10)
 
 				# Transfer to apps
-				nbrs = [self.app2vec_model.wv.index2word[nbr-1] for nbr in nbrs]
+				nbrs = [self.app2vec_model.wv.index2word[nbr] for nbr in nbrs]
 
 				counter = collections.Counter(nbrs)
 
@@ -1289,7 +1290,7 @@ class ANN(processData,BILSTM,WordSemantic):
 				nbrs = ann_model.get_nns_by_vector(vector_predict,10)
 
 				# Transfer to app
-				nbr_app = [self.app2vec_model.wv.index2word[nbr-1] for nbr in nbrs]
+				nbr_app = [self.app2vec_model.wv.index2word[nbr] for nbr in nbrs]
 
 				for nbr_id in range(len(nbr_app)):
 					# Calculate the semantic score
@@ -1328,4 +1329,4 @@ class ANN(processData,BILSTM,WordSemantic):
 		plt.ylabel('% accuracy')
 		plt.xlabel('num_tress')
 		plt.show()
-		
+
