@@ -806,7 +806,7 @@ class AF(processData,BILSTM,WordSemantic):
 					self.shared_dict = dict()
 
 					# Get the input vector
-					vector = np.mean([self.app2vec_model.wv.syn0[app_index - 1] for app_index in X_test[app_seq_id]],0)
+					vector = np.mean([self.app2vec_model.wv.syn0[app_index - 1] for app_index in X_test_data[app_seq_id]],0)
 
 					# The predicted label
 					predict_label = af_model.predict([vector])
