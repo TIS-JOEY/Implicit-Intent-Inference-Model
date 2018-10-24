@@ -244,17 +244,17 @@ class processData:
 			# Transfer to Index
 			data = list(map(lambda x:self.app2vec_model.wv.vocab[x].index+1,i))
 
-			
+			'''
 			half = len(i)//2
 			X.append(data[:half])
 			y.append(i[half:])
-			
-			
 			'''
+			
+			
 			for j in range(len(i)):
 				X.append([data[j]])
 				y.append(i[:j]+i[j+1:])
-			'''
+			
 		return X,y
 
 	def training_data_with_doc(self):
@@ -271,16 +271,17 @@ class processData:
 			# Transfer to Index
 			t_index = list(map(lambda x:self.app2vec_model.wv.vocab[x].index+1,data))
 			
+			'''
 			half = len(data)//2
 			X.append([t_index[:half],self.text[index]])
 			y.append(data[half:])
-			
 			'''
+			
 			for j in range(len(data)):
-				X.append([t_index[j],self.text[index]])
+				X.append([[t_index[j]],self.text[index]])
 				y.append(data[:j]+data[j+1:])
 				#text.append(self.des[str(i[j])])
-			'''
+			
 		return X,y
 
 	def generateClass(self,file_path,save):
@@ -1121,8 +1122,9 @@ class ANN(processData,BILSTM,WordSemantic):
 				# Count the total number
 				total_num+=len(y)
 
-			print(sum/total_num)
-				
+			print('num_tree = ',num_tree)
+			print('accuracy = ',sum/total_num)
+			print()
 
 			# Record the accuracy
 			self.ann_accuracy.append(sum/total_num)
@@ -1147,7 +1149,6 @@ class ANN(processData,BILSTM,WordSemantic):
 		# Get App seqs and their corrsponding sentence.
 		X_test_data,X_test_text = zip(*tmp_test)
 
-
 		for num_tree in num_trees:
 			
 			# Build ANN
@@ -1166,7 +1167,8 @@ class ANN(processData,BILSTM,WordSemantic):
 				self.shared_dict = dict()
 
 				# Get their neighbor and flat it to 1D.
-				nbrs = list(itertools.chain.from_iterable([ann_model.get_nns_by_item(index - 1,10) for index in X_test_data[app_seq_id]]))
+				#nbrs = list(itertools.chain.from_iterable([ann_model.get_nns_by_item(index - 1,10) for index in X_test_data[app_seq_id]]))
+				nbrs = ann_model.get_nns_by_item(X_test_data[app_seq_id] - 1,10)
 
 				# Transfer to app
 				nbr_app = [self.app2vec_model.wv.index2word[nbr] for nbr in nbrs]
@@ -1189,6 +1191,9 @@ class ANN(processData,BILSTM,WordSemantic):
 				# Count the total number
 				total_num+=len(y)
 				
+			print('num_tree = ',num_tree)
+			print('accuracy = ',sum/total_num)
+			print()
 
 			# Record the accuracy
 			self.ann_accuracy.append(sum/total_num)
@@ -1247,6 +1252,9 @@ class ANN(processData,BILSTM,WordSemantic):
 				# Count the total number
 				total_num+=len(y)
 				
+			print('num_tree = ',num_tree)
+			print('accuracy = ',sum/total_num)
+			print()
 
 			# Record the accuracy
 			self.ann_accuracy.append(sum/total_num)
@@ -1309,7 +1317,10 @@ class ANN(processData,BILSTM,WordSemantic):
 
 				# Count the total number
 				total_num+=len(y)
-				
+			
+			print('num_tree = ',num_tree)
+			print('accuracy = ',sum/total_num)
+			print()
 
 			# Record the accuracy
 			self.ann_accuracy.append(sum/total_num)
@@ -1329,4 +1340,5 @@ class ANN(processData,BILSTM,WordSemantic):
 		plt.ylabel('% accuracy')
 		plt.xlabel('num_tress')
 		plt.show()
-
+		
+		
