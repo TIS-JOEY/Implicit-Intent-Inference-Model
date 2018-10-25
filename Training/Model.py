@@ -133,6 +133,8 @@ class processData:
 			if save:
 				self.save(self.training_data,'data/training_data/R1_data.txt')
 
+		self.limit_length = len(self.training_data)
+
 	def _processR1(self,each_app_seq):
 		each_app_list = each_app_seq.split()
 		result = []
@@ -155,14 +157,15 @@ class processData:
 			raw_data = [row.tolist()[0].split('\t') for index,row in df.iterrows()]
 
 			all_data = [(row[1],row[2]) for row in raw_data if ';' in row[1]]
+			
 
-			data,text = map(list, zip(*all_data))
+			#data,text = map(list, zip(*all_data))
 
-			self.text.extend(text)
+			
 
 			#Full cut mode
 			if self.ignore_all:
-				for each_app_list in map(self._processR2,data):
+				for each_app_list in map(self._processR2,all_data):
 					self.training_data.extend(each_app_list)
 				
 			#Select cut mode
@@ -173,16 +176,22 @@ class processData:
 				self.save(self.training_data,'data/training_data/R2_data.txt')
 				self.saveText(self.text,'data/training_data/R2_text.txt')
 
-		self.limit_length = len(self.training_data)
+	def _processR2(self,all_data):
+		data,text = all_data
 
-	def _processR2(self,each_app_seq):
-		each_app_list = each_app_seq.split(';')
+		each_app_list = data.split(';')
+
+
 		result = []
 		for app in each_app_list:
 			if app not in self.goal_app:
 				return []
 			else:
 				result.append(app)
+
+		if result:
+			self.text.append(text)
+
 		return [result]
 
 	def processR3(self,R3_path,save = False):
@@ -198,13 +207,13 @@ class processData:
 
 			all_data = [(row[1],row[2]) for row in raw_data if ';' in row[1]]
 
-			data,text = map(list, zip(*all_data))
+			#data,text = map(list, zip(*all_data))
 
-			self.text.extend(text)
+			#self.text.extend(text)
 
 			#Full cut mode
 			if self.ignore_all:
-				for each_app_list in map(self._processR2,data):
+				for each_app_list in map(self._processR2,all_data):
 					self.training_data.extend(each_app_list)
 				
 			#Select cut mode
@@ -234,6 +243,42 @@ class processData:
 				y.append(row['relevant'])
 
 		return X,y
+
+	def mf_model(self,app2vec_model,K = 2,alpha = 0.1,beta = 0.01, iterations = 1000,retrain = False):
+
+		if os.path.exists('data/training_data/rating_matrix.txt') and not retrain:
+			return self.load_resource('data/training_data/rating_matrix.txt')
+
+		else:
+			length = len(app2vec_model.wv.syn0)
+
+			mf_matrix = np.zeros((length,length),dtype = 'float32')
+
+			if not self.training_data:
+				self.setup_training_data()
+
+			for app_seq in self.training_data:
+
+				# Transfer to Index
+				data = list(map(lambda x:app2vec_model.wv.vocab[x].index,app_seq))
+
+				for pivot in range(len(data)):
+					for remain_ele in data[:pivot]+data[pivot+1:]:
+						mf_matrix[data[pivot],remain_ele]+=1
+
+			from sklearn.preprocessing import normalize
+
+			mf_matrix =  np.array(normalize(mf_matrix, norm='l2'))
+
+			mf = MF(mf_matrix, K=K, alpha=alpha, beta=beta, iterations=iterations)
+
+			training_process = mf.train()
+
+			rating_matrix = mf.full_matrix()
+
+			self.save(rating_matrix,'data/training_data/rating_matrix.txt')
+
+			return rating_matrix
 
 	def training_data_without_doc(self):
 
@@ -265,10 +310,10 @@ class processData:
 		if not self.training_data:
 			self.setup_training_data()
 
+
 		X,y = [],[]
-
 		app_with_text_data = self.training_data[self.limit_length:]
-
+		
 		for index,data in enumerate(app_with_text_data):
 
 			# Transfer to Index
@@ -281,6 +326,7 @@ class processData:
 			'''
 			
 			for j in range(len(data)):
+
 				X.append([[t_index[j]],self.text[index]])
 				y.append(data[:j]+data[j+1:])
 				#text.append(self.des[str(i[j])])
@@ -355,9 +401,9 @@ class processData:
 				y_training_data[i,j] = vector[j]
 
 		
-		combined = list(zip(X_training_data, y_training_data))
+		combined = list(zip(X_training_data, y_training_data,X))
 		random.shuffle(combined)
-		X_training_data[:], y_training_data[:] = zip(*combined)
+		X_training_data[:], y_training_data[:],X[:] = zip(*combined)
 		
 
 		if test_size:
@@ -365,15 +411,16 @@ class processData:
 			size = int(len(X_training_data)*(1-test_size))
 			X_train = X_training_data[:size]
 			y_train = y_training_data[:size]
-
+			X_train_id = X[:size]
+			X_test_id = X[size:]
 			X_test = X_training_data[size:]
 			y_test = y[size:]
 
+			return X_train,X_test,y_train,y_test,X_train_id,X_test_id
+
 		else:
 
-			X_train,X_test,y_train,y_test = X_training_data,y_training_data,None,None
-
-		return X_train,X_test,y_train,y_test
+			return X_training_data,y_training_data
 
 	def prepare_BI_LSTM_training_doc_data(self,app2vec_model,max_len = 5,test_size = 0.1):
 		'''
@@ -415,9 +462,6 @@ class processData:
 			vector = y_vector[i]
 			for j in range(len(vector)):
 				y_training_data[i,j] = vector[j]
-
-		
-		
 		
 
 		if test_size:
@@ -430,11 +474,11 @@ class processData:
 			y_test = y[size:]
 			X_text = X_text[size:]
 
+			return X_train,X_test,y_train,y_test,X_text
+
 		else:
 
-			X_train,X_test,y_train,y_test,X_text = X_training_data,y_training_data,None,None,None
-
-		return X_train,X_test,y_train,y_test,X_text
+			return X_training_data,y_training_data
 
 	def setup_training_data(self,save = False):
 		self.generateClass('data/training_data/class_map.xlsx',save)
@@ -518,13 +562,7 @@ class App2Vec(processData):
 
 		gsearch = GridSearchCV(app2vecEstimator.app2vec_estimator(self.training_data,size = 90,window = 3,min_count = 0,iter = 1000), param_grid = param, scoring = 'accuracy', cv = inner_cv)
 		gsearch.fit(X,y)
-		print('done')
 
-		print(param['iter'])
-		print(param['size'])
-		print(param['window'])
-		print(gsearch.cv_results_['mean_test_score'].reshape(len(param['iter']),len(param['size']),len(param['window'])))
-		self.plot2(gsearch.cv_results_,param['iter'],param['size'],param['window'])
 		self.plot_grid_search(gsearch.cv_results_,param['size'],param['window'],'size','window')
 
 		print("CV_Result：")
@@ -571,7 +609,7 @@ class BILSTM:
 
 	def get_model(self,epochs = 50,batch_size = 30):
 		p_data = processData(app2vec_model_path = 'data/Model/app2vec.model')
-		X,y,_,_ = p_data.prepare_BI_LSTM_training_data(self.app2vec_model,test_size = 0)
+		X,y = p_data.prepare_BI_LSTM_training_data(self.app2vec_model,test_size = 0)
 
 		self.train_BILSTM(X_train = X,y_train = y,epochs = epochs,batch_size = batch_size,for_evaluate = False,store_path = 'data/Model/BILSTM_model.h5')
 
@@ -692,25 +730,24 @@ class AF(processData,BILSTM,WordSemantic):
 		BILSTM.__init__(self,app2vec_model_path,max_len)
 		WordSemantic.__init__(self)
 
-	def AF(self,max_iter = 3000,preference = -30,for_evaluate = False,lstm = False,doc = False):
+	def AF(self,max_iter = 3000,preference = -30,for_evaluate = False,lstm = False,ranker = 'mv'):
 		
-		# Evaluating
 		if for_evaluate:
-
-			if doc:
-				if lstm:
-					self.evaluate_AF_BILSTM_doc(max_iter = max_iter,preference = preference,for_evaluate = True)
-				else:
-					self.evaluate_af_doc(max_iter = max_iter,preference = preference)
+			if lstm:
+				if ranker == 'mv':
+					self.evaluate_AF_BILSTM_mv(max_iter = max_iter,preference = preference,for_evaluate = for_evaluate)
+				elif ranker == 'mf':
+					self.evaluate_AF_BILSTM_mf(max_iter = max_iter,preference = preference,for_evaluate = for_evaluate)
+				elif ranker == 'doc':
+					self.evaluate_AF_BILSTM_doc(max_iter = max_iter,preference = preference,for_evaluate = for_evaluate)
 			else:
-				if lstm:
-					self.evaluate_AF_BILSTM(max_iter = max_iter,preference = preference,for_evaluate = True)
-				else:
-					self.evaluate_af(max_iter = max_iter,preference = preference)
-				
-		# Train AF model
+				if ranker == 'mv':
+					self.evaluate_af_mv(max_iter = max_iter,preference = preference)
+				elif ranker == 'mf':
+					self.evaluate_af_mf(max_iter = max_iter,preference = preference)
+				elif ranker == 'doc':
+					self.evaluate_af_doc(max_iter = max_iter,preference = preference)
 		else:
-
 			#store the training data of AF.
 			af_training_data = []
 
@@ -726,7 +763,7 @@ class AF(processData,BILSTM,WordSemantic):
 			# save the model
 			joblib.dump(af_model, af_model_path)
 
-	def evaluate_af(self,max_iter,preference):
+	def evaluate_af_mv(self,max_iter,preference):
 
 		# Load Testing data
 		X,y = self.training_data_without_doc()
@@ -794,11 +831,81 @@ class AF(processData,BILSTM,WordSemantic):
 		# Make Plot
 		self.plot_af(cv_result)
 
+	def evaluate_af_mf(self,max_iter,preference):
+
+		mf_matrix = self.mf_model(self.app2vec_model,K = 2,alpha = 0.1,beta = 0.01, iterations = 1000)
+
+		# Load Testing data
+		X,y = self.training_data_without_doc()
+
+		#store the training data of AF.
+		af_training_data = []
+
+		#Average the vector of each app sequence as a unit
+		for app_seq in self.training_data:
+			af_training_data.append(np.mean([self.app2vec_model[app] for app in app_seq],0))
+
+
+		# Get Testing data
+		X_train,X_test,y_train,y_test = train_test_split(X,y, test_size=0.9, random_state=0, shuffle = True)
+
+		# Recording the performance
+		cv_result = collections.defaultdict(list)
+
+		for max_iter_param in max_iter:
+			for preference_param in preference:
+				
+				# Train AF model
+				af_model = AffinityPropagation(max_iter = max_iter_param,preference = preference_param).fit(af_training_data)
+
+				# Get Label to their corrsponding app seqs.
+				self._get_label2app(af_model)
+
+				# For calculating the accuracy
+				sum = 0
+				total_num = 0
+				
+				for app_seq_id in range(len(X_test)):
+					
+					# Get the input vector
+					vector = np.mean([self.app2vec_model.wv.syn0[app_index - 1] for app_index in X_test[app_seq_id]],0)
+
+					# The predicted label
+					predict_label = af_model.predict([vector])
+
+					scoring = [(can,mf_matrix[X_test[app_seq_id][0]-1][self.app2vec_model.wv.vocab[can].index]) for can in self.label2app[predict_label[0]]]
+					
+					# Sort by frequency
+					mf_filter = list(map(lambda y:y[0],sorted(scoring,key = lambda x:x[1],reverse = True)))
+
+					y = set([self.app2class[i] for i in y_test[app_seq_id]] )
+
+					# Compare with true labels
+					result = self.checkClass(mf_filter,len(y))
+
+					# Count the correct records
+					sum+=len(set(result).intersection(y))
+
+					# Count the total number
+					total_num+=len(y)
+
+
+				print('max_iter = ',max_iter_param)
+				print('preference = ',preference_param)
+				print('accuracy = ',sum/total_num)
+				
+
+				# Record the accuracy.
+				cv_result[max_iter_param].append((preference_param,sum/(total_num)))
+					
+		# Make Plot
+		self.plot_af(cv_result)
+
 	def evaluate_af_doc(self,max_iter,preference):
 
 		# Load Testing data
 		X,y = self.training_data_with_doc()
-		print(X)
+
 		#store the training data of AF.
 		af_training_data = []
 
@@ -869,10 +976,10 @@ class AF(processData,BILSTM,WordSemantic):
 		# Make Plot
 		self.plot_af(cv_result)
 		
-	def evaluate_AF_BILSTM(self,max_iter,preference,for_evaluate):
+	def evaluate_AF_BILSTM_mv(self,max_iter,preference,for_evaluate):
 		
 		# Prepare the training and testing data
-		X_train,X_test,y_train,y_test = self.prepare_BI_LSTM_training_data(self.app2vec_model,test_size = 0.3)
+		X_train,X_test,y_train,y_test,X_train_id,X_test_id = self.prepare_BI_LSTM_training_data(self.app2vec_model,test_size = 0.3)
 
 		#store the training data of AF.
 		af_training_data = []
@@ -901,9 +1008,6 @@ class AF(processData,BILSTM,WordSemantic):
 				total_num = 0
 				
 				for app_seq_id in range(len(X_test)):
-
-					# For recording the semantic score
-					self.shared_dict = dict()
 					
 					X = np.array([X_test[app_seq_id]])
 
@@ -940,7 +1044,77 @@ class AF(processData,BILSTM,WordSemantic):
 					
 		# Make Plot
 		self.plot_af(cv_result)
+
+	def evaluate_AF_BILSTM_mf(self,max_iter,preference,for_evaluate):
 		
+		mf_matrix = self.mf_model(self.app2vec_model,K = 2,alpha = 0.1,beta = 0.01, iterations = 1000)
+
+		# Prepare the training and testing data
+		X_train,X_test,y_train,y_test,X_train_id,X_test_id = self.prepare_BI_LSTM_training_data(self.app2vec_model,test_size = 0.3)
+
+		#store the training data of AF.
+		af_training_data = []
+
+		#Average the vector of each app sequence as a unit
+		for app_seq in self.training_data:
+			af_training_data.append(np.mean([self.app2vec_model[app] for app in app_seq],0))
+
+		# Train BILSTM model
+		BI_LSTM_model = self.train_BILSTM(X_train,y_train,for_evaluate = for_evaluate)
+		
+		# Recording the performance
+		cv_result = collections.defaultdict(list)
+
+		for max_iter_param in max_iter:
+			for preference_param in preference:
+
+				# Train AF model
+				af_model = AffinityPropagation(max_iter = max_iter_param,preference = preference_param).fit(af_training_data)
+
+				# Get Label to their corrsponding app seqs.
+				self._get_label2app(af_model)
+
+				# For calculating the accuracy
+				sum = 0
+				total_num = 0
+				
+				for app_seq_id in range(len(X_test)):
+					
+					X = np.array([X_test[app_seq_id]])
+
+					# Get the predicted vector
+					vector_predict = BI_LSTM_model.predict(X)
+
+					# The predicted label
+					predict_label = af_model.predict(vector_predict)
+
+					scoring = [(can,mf_matrix[X_test_id[app_seq_id][0]-1][self.app2vec_model.wv.vocab[can].index]) for can in self.label2app[predict_label[0]]]
+
+					# Sort by frequency
+					mf_filter = list(map(lambda y:y[0],sorted(scoring,key = lambda x:x[1],reverse = True)))
+
+					y = set([self.app2class[i] for i in y_test[app_seq_id]] )
+
+					# Compare with true labels
+					result = self.checkClass(mf_filter,len(y))
+
+					# Count the correct records
+					sum+=len(set(result).intersection(y))
+
+					# Count the total number
+					total_num+=len(y)
+
+				print('max_iter = ',max_iter_param)
+				print('preference = ',preference_param)
+				print('accuracy = ',sum/total_num)
+					
+
+				# Record the accuracy.
+				cv_result[max_iter_param].append((preference_param,sum/(total_num)))
+					
+		# Make Plot
+		self.plot_af(cv_result)
+	
 	def evaluate_AF_BILSTM_doc(self,max_iter,preference,for_evaluate):
 
 		# Prepare the training and testing data
@@ -1088,7 +1262,7 @@ class ANN(processData,BILSTM,WordSemantic):
 		#save the model
 		ann_model.save(self.ann_model_path)
 		
-	def ANN(self,num_tree,for_evaluate = False,doc = False,lstm = False):
+	def ANN(self,num_tree,for_evaluate = False,lstm = False,ranker = 'mv'):
 		'''
 		dim = the Dimension of App2Vec.
 		num_tree：The number of trees of your ANN forest. More tress more accurate.
@@ -1096,20 +1270,24 @@ class ANN(processData,BILSTM,WordSemantic):
 		'''	
 
 		if for_evaluate:
-			if doc:
-				if lstm:
-					self.evaluate_ANN_BILSTM_doc(num_trees = num_tree,for_evaluate = for_evaluate)
-				else:
-					self.evaluate_ann_doc(num_trees = num_tree)
+			if lstm:
+				if ranker == 'mv':
+					self.evaluate_ANN_BILSTM_mv(num_trees = num_tree,for_evaluate = for_evaluate)
+				elif ranker == 'mf':
+					self.evaluate_ANN_BILSTM_mf(num_trees = num_tree,for_evaluate = for_evaluate)
+				elif ranker == 'doc':
+					self.evaluate_AF_BILSTM_doc(num_trees = num_tree,for_evaluate = for_evaluate)
 			else:
-				if lstm:
-					self.evaluate_ANN_BILSTM(num_trees = num_tree,for_evaluate = for_evaluate)
-				else:
-					self.evaluate_ann(num_trees = num_tree)
+				if ranker == 'mv':
+					self.evaluate_ann_mv(num_trees = num_tree)
+				elif ranker == 'mf':
+					self.evaluate_ann_mf(num_trees = num_tree)
+				elif ranker == 'doc':
+					self.evaluate_ann_doc(num_trees = num_tree)
 		else:
 			self._ANN_builder(num_tree)
 
-	def evaluate_ann(self,num_trees):
+	def evaluate_ann_mv(self,num_trees):
 		'''
 		Without Doc2Vec
 		'''
@@ -1202,7 +1380,7 @@ class ANN(processData,BILSTM,WordSemantic):
 
 				# Get their neighbor and flat it to 1D.
 				#nbrs = list(itertools.chain.from_iterable([ann_model.get_nns_by_item(index - 1,10) for index in X_test_data[app_seq_id]]))
-				nbrs = ann_model.get_nns_by_item(X_test_data[app_seq_id] - 1,10)
+				nbrs = ann_model.get_nns_by_item(X_test_data[app_seq_id][0] - 1,10)
 
 				# Transfer to app
 				nbr_app = [self.app2vec_model.wv.index2word[nbr] for nbr in nbrs]
@@ -1238,10 +1416,69 @@ class ANN(processData,BILSTM,WordSemantic):
 		# Make Plot
 		self.evaluate_ann_make_plot()
 
-	def evaluate_ANN_BILSTM(self,num_trees,for_evaluate):
+	def evaluate_ann_mf(self,num_trees):
+		'''
+		Without Doc2Vec
+		'''
+		
+		mf_matrix = self.mf_model(self,app2vec_model,K = 2,alpha = 0.1,beta = 0.01, iterations = 1000)
+
+		# Load Testing data
+		X,y = self.training_data_without_doc()
+
+		# Get Testing data
+		X_train,X_test,y_train,y_test = train_test_split(X,y, test_size=0.9, random_state=0, shuffle = True)
+
+		for num_tree in num_trees:
+			
+			# Build ANN
+			self._ANN_builder(num_tree)
+
+			# Load ANN model
+			ann_model = self.load_ANN()
+
+			# For calculating the accuracy
+			sum = 0
+			total_num = 0
+
+			for app_seq_id in range(len(X_test)):
+
+				# Get their neighbor and flat it to 1D.
+				nbrs = list(itertools.chain.from_iterable([ann_model.get_nns_by_item(index-1,10) for index in X_test[app_seq_id]]))
+
+				scoring = [(nbr,mf.matrix[X_test[app_seq_id][0]-1][nbr]) for nbr in nbrs]
+
+				# Sort by frequency
+				mf_filter = list(map(lambda y:self.app2vec_model.wv.index2word[y[0]],sorted(scoring,key = lambda x:x[1],reverse = True)))
+
+				y = set([self.app2class[i] for i in y_test[app_seq_id]] )
+
+				# Compare with true labels
+				result = self.checkClass(mf_filter,len(y))
+
+				# Count the correct records
+				sum+=len(set(result).intersection(y))
+
+				# Count the total number
+				total_num+=len(y)
+
+			print('num_tree = ',num_tree)
+			print('accuracy = ',sum/total_num)
+			print()
+
+			# Record the accuracy
+			self.ann_accuracy.append(sum/total_num)
+
+			# Record the parameters
+			self.ann_num_trees.append(num_tree)
+
+		# Make Plot
+		self.evaluate_ann_make_plot()
+
+	def evaluate_ANN_BILSTM_mv(self,num_trees,for_evaluate):
 
 		# Prepare the training and testing data
-		X_train,X_test,y_train,y_test = self.prepare_BI_LSTM_training_data(self.app2vec_model,test_size = 0.3)
+		X_train,X_test,y_train,y_test,X_train_id,X_test_id = self.prepare_BI_LSTM_training_data(self.app2vec_model,test_size = 0.3)
 
 		# Train BILSTM model
 		BI_LSTM_model = self.train_BILSTM(X_train,y_train,for_evaluate = for_evaluate)
@@ -1365,6 +1602,66 @@ class ANN(processData,BILSTM,WordSemantic):
 		# Make Plot
 		self.evaluate_ann_make_plot()
 
+	def evaluate_ANN_BILSTM_mf(self,num_trees,for_evaluate):
+
+		mf_matrix = self.mf_model(self,app2vec_model,K = 2,alpha = 0.1,beta = 0.01, iterations = 1000)
+
+		# Prepare the training and testing data
+		X_train,X_test,y_train,y_test,X_train_id,X_test_id = self.prepare_BI_LSTM_training_data(self.app2vec_model,test_size = 0.3)
+
+		# Train BILSTM model
+		BI_LSTM_model = self.train_BILSTM(X_train,y_train,for_evaluate = for_evaluate)
+
+		for num_tree in num_trees:
+			
+			# Build ANN
+			self._ANN_builder(num_tree)
+
+			# Load ANN model
+			ann_model = self.load_ANN()
+
+			# For calculating the accuracy
+			sum = 0
+			total_num = 0
+
+			for app_seq_id in range(len(X_test)):
+				
+				X = np.array([X_test[app_seq_id]])
+
+				vector_predict = BI_LSTM_model.predict(X)[0]
+
+				# Get their neighbor.
+				nbrs = ann_model.get_nns_by_vector(vector_predict,10)
+
+				scoring = [(nbr,mf.matrix[X_test_id[app_seq_id][0]-1][nbr]) for nbr in nbrs]
+
+				# Sort by frequency
+				mf_filter = list(map(lambda y:self.app2vec_model.wv.index2word[y[0]],sorted(scoring,key = lambda x:x[1],reverse = True)))
+
+				y = set([self.app2class[i] for i in y_test[app_seq_id]] )
+
+				# Compare with true labels
+				result = self.checkClass(mf_filter,len(y))
+
+				# Count the correct records
+				sum+=len(set(result).intersection(y))
+
+				# Count the total number
+				total_num+=len(y)
+				
+			print('num_tree = ',num_tree)
+			print('accuracy = ',sum/total_num)
+			print()
+
+			# Record the accuracy
+			self.ann_accuracy.append(sum/total_num)
+
+			# Record the parameters
+			self.ann_num_trees.append(num_tree)
+
+		# Make Plot
+		self.evaluate_ann_make_plot()
+
 	def evaluate_ann_make_plot(self):
 		'''
 		Make plot for ANN.
@@ -1374,3 +1671,95 @@ class ANN(processData,BILSTM,WordSemantic):
 		plt.ylabel('% accuracy')
 		plt.xlabel('num_tress')
 		plt.show()
+
+class MF:
+	
+	def __init__(self, R, K, alpha, beta, iterations):
+		"""
+		Perform matrix factorization to predict empty
+		entries in a matrix.
+		
+		Arguments
+		- R (ndarray)   : user-item rating matrix
+		- K (int)       : number of latent dimensions
+		- alpha (float) : learning rate
+		- beta (float)  : regularization parameter
+		"""
+		
+		self.R = R
+		self.num_users, self.num_items = R.shape
+		self.K = K
+		self.alpha = alpha
+		self.beta = beta
+		self.iterations = iterations
+
+	def train(self):
+		# Initialize user and item latent feature matrice
+		self.P = np.random.normal(scale=1./self.K, size=(self.num_users, self.K))
+		self.Q = np.random.normal(scale=1./self.K, size=(self.num_items, self.K))
+		
+		# Initialize the biases
+		self.b_u = np.zeros(self.num_users)
+		self.b_i = np.zeros(self.num_items)
+		self.b = np.mean(self.R[np.where(self.R != 0)])
+		
+		# Create a list of training samples
+		self.samples = [
+			(i, j, self.R[i, j])
+			for i in range(self.num_users)
+			for j in range(self.num_items)
+			if self.R[i, j] > 0
+		]
+		
+		# Perform stochastic gradient descent for number of iterations
+		training_process = []
+		for i in range(self.iterations):
+			np.random.shuffle(self.samples)
+			self.sgd()
+			mse = self.mse()
+			training_process.append((i, mse))
+			if (i+1) % 10 == 0:
+				print("Iteration: %d ; error = %.4f" % (i+1, mse))
+		
+		return training_process
+
+	def mse(self):
+		"""
+		A function to compute the total mean square error
+		"""
+		xs, ys = self.R.nonzero()
+		predicted = self.full_matrix()
+		error = 0
+		for x, y in zip(xs, ys):
+			error += pow(self.R[x, y] - predicted[x, y], 2)
+		return np.sqrt(error)
+
+	def sgd(self):
+		"""
+		Perform stochastic graident descent
+		"""
+		for i, j, r in self.samples:
+			# Computer prediction and error
+			prediction = self.get_rating(i, j)
+			e = (r - prediction)
+			
+			# Update biases
+			self.b_u[i] += self.alpha * (e - self.beta * self.b_u[i])
+			self.b_i[j] += self.alpha * (e - self.beta * self.b_i[j])
+			
+			# Update user and item latent feature matrices
+			self.P[i, :] += self.alpha * (e * self.Q[j, :] - self.beta * self.P[i,:])
+			self.Q[j, :] += self.alpha * (e * self.P[i, :] - self.beta * self.Q[j,:])
+
+	def get_rating(self, i, j):
+		"""
+		Get the predicted rating of user i and item j
+		"""
+		prediction = self.b + self.b_u[i] + self.b_i[j] + self.P[i, :].dot(self.Q[j, :].T)
+		return prediction
+	
+	def full_matrix(self):
+		"""
+		Computer the full matrix using the resultant biases, P and Q
+		"""
+		return self.b + self.b_u[:,np.newaxis] + self.b_i[np.newaxis:,] + self.P.dot(self.Q.T)
