@@ -69,19 +69,30 @@ bilstm = BILSTM(app2vec_model_path = 'data/Model/app2vec.model',max_len = 5)
 bilstm.get_model(epochs = 50,batch_size = 30)
 ```
 
+## Matrix Factorization
+```
+p_data = processData()
+p_data.mf_model()
+
+app2vec_model = Word2Vec.load('data/Model/app2vec.model')
+
+# Train the Matrix Factorization model.
+p_data.mf_model(app2vec_model = app2vec_model, K = 2, alpha = 0.1, beta = 0.01, iterations = 1000, retrain = True)
+```
+
 ## ANN
 ```
 # -*- Train ANN
 ann = ANN(app2vec_model_path = 'data/Model/app2vec.model',ann_model_path = 'data/Model/ann_model.ann',max_len = 5)
 
 # Goal: Find the best parameters
-# With Doc2Vec, set doc to True.
-# With BILSTM, set lstm to True.
+# With BILSTM, set lstm to True, vice versa.
+# You can set ranker to 'mv'(major voting filter), 'doc'(semantic filter), 'mf'(matrix factorization filter)
 # and vice versa.
 ann.ANN(num_tree = range(10000,20001,10000),
         for_evaluate = True,
-        doc = True,
-        lstm = True)
+        lstm = True,
+	ranker = 'mv')
 
 # After finding, we can train our ANN model.
 ann.ANN(num_tree = 18000,for_evaluate = False)
@@ -92,14 +103,13 @@ ann.ANN(num_tree = 18000,for_evaluate = False)
 af = AF(app2vec_model_path = 'data/Model/app2vec.model',max_len = 5,af_model_path = 'data/Model/af_model.pkl')
 
 # Goal: Find the best parameters
-# With Doc2Vec, set doc to True.
-# With BILSTM, set lstm to True.
-# and vice versa.
+# With BILSTM, set lstm to True, vice versa.
+# You can set ranker to 'mv'(major voting filter), 'doc'(semantic filter), 'mf'(matrix factorization filter)
 af.AF(max_iter = range(1000,4001,1000),
       preference = range(-10,-41,-10), 
       for_evaluate = True,
       lstm = False, 
-      doc = False)
+      ranker = 'doc')
  
 # After finding, we can train our AF model.
 af.AF(max_iter = 4000,preference = -30,for_evaluate = False)
