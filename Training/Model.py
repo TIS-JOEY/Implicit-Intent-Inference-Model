@@ -119,6 +119,8 @@ class processData:
 		else:
 			df = pd.read_csv(R1_path,header = None)
 
+			data_length = len(self.training_data)
+
 			for index,each_app_seq in df.iterrows():
 
 				#Full cut mode
@@ -131,7 +133,7 @@ class processData:
 					self.training_data.append([app for ele_app_list in each_app_seq.tolist() for app in each_app_list.split(' ') if app not in stop_app])
 
 			if save:
-				self.save(self.training_data,'data/training_data/R1_data.txt')
+				self.save(self.training_data[data_length:],'data/training_data/R1_data.txt')
 
 		self.limit_length = len(self.training_data)
 
@@ -148,10 +150,16 @@ class processData:
 
 	# load R2 resource.
 	def processR2(self,R2_path,save = False):
+		
 		if os.path.exists('data/training_data/R2_data.txt'):
 			self.training_data.extend(self.load_resource('data/training_data/R2_data.txt'))
 			self.text.extend(self.load_resource('data/training_data/R2_text.txt'))
+			
 		else:
+			
+			data_length = len(self.training_data)
+			text_length = len(self.text)
+
 			df = pd.read_csv(R2_path,header = None)
 
 			raw_data = [row.tolist()[0].split('\t') for index,row in df.iterrows()]
@@ -173,10 +181,11 @@ class processData:
 				self.training_data.append([app for ele_app_list in [row.split(' ')[1] for index,row in df.iterrows()] for app in each_app_list.split(';') if app not in self.stop_app])
 
 			if save:
-				self.save(self.training_data,'data/training_data/R2_data.txt')
-				self.saveText(self.text,'data/training_data/R2_text.txt')
+				self.save(self.training_data[data_length:],'data/training_data/R2_data.txt')
+				self.saveText(self.text[text_length:],'data/training_data/R2_text.txt')
 
 	def _processR2(self,all_data):
+		
 		data,text = all_data
 
 		each_app_list = data.split(';')
@@ -201,6 +210,9 @@ class processData:
 			self.text.extend(self.load_resource('data/training_data/R3_text.txt'))
 
 		else:
+			data_length = len(self.training_data)
+			text_length = len(self.text)
+
 			df = pd.read_csv(R3_path,header = None)
 
 			raw_data = [row.tolist()[0].split('\t') for index,row in df.iterrows()]
@@ -221,11 +233,12 @@ class processData:
 				self.training_data.append([app for ele_app_list in [row.split(' ')[1] for index,row in df.iterrows()] for app in each_app_list.split(';') if app not in self.stop_app])
 
 			if save:
-				self.save(self.training_data,'data/training_data/R3_data.txt')
-				self.saveText(self.text,'data/training_data/R3_text.txt')
+				self.save(self.training_data[data_length:],'data/training_data/R3_data.txt')
+				self.saveText(self.text[text_length:],'data/training_data/R3_text.txt')
 
 	# for classifying.
 	def classify_data(self,filepath):
+		
 		df = pd.read_excel(filepath)
 		X,y = [],[]
 		for index,row in df.iterrows():
@@ -309,7 +322,6 @@ class processData:
 
 		if not self.training_data:
 			self.setup_training_data()
-
 
 		X,y = [],[]
 		app_with_text_data = self.training_data[self.limit_length:]
