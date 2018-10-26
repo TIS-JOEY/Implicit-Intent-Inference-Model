@@ -1330,7 +1330,7 @@ class ANN(processData,BILSTM,WordSemantic):
 				elif ranker == 'mf':
 					self.evaluate_ANN_BILSTM_mf(num_trees = num_tree,for_evaluate = for_evaluate)
 				elif ranker == 'doc':
-					self.evaluate_AF_BILSTM_doc(num_trees = num_tree,for_evaluate = for_evaluate)
+					self.evaluate_ANN_BILSTM_doc(num_trees = num_tree,for_evaluate = for_evaluate)
 			else:
 				if ranker == 'mv':
 					self.evaluate_ann_mv(num_trees = num_tree)
@@ -1500,7 +1500,7 @@ class ANN(processData,BILSTM,WordSemantic):
 				# Get their neighbor and flat it to 1D.
 				nbrs = list(itertools.chain.from_iterable([ann_model.get_nns_by_item(index-1,10) for index in X_test[app_seq_id]]))
 
-				scoring = [(nbr,mf.matrix[X_test[app_seq_id][0]-1][nbr]) for nbr in nbrs]
+				scoring = [(nbr,mf_matrix[X_test[app_seq_id][0]-1][nbr]) for nbr in nbrs]
 
 				# Sort by frequency
 				mf_filter = list(map(lambda y:self.app2vec_model.wv.index2word[y[0]],sorted(scoring,key = lambda x:x[1],reverse = True)))
@@ -1687,7 +1687,7 @@ class ANN(processData,BILSTM,WordSemantic):
 				# Get their neighbor.
 				nbrs = ann_model.get_nns_by_vector(vector_predict,10)
 
-				scoring = [(nbr,mf.matrix[X_test_id[app_seq_id][0]-1][nbr]) for nbr in nbrs]
+				scoring = [(nbr,mf_matrix[X_test_id[app_seq_id][0]-1][nbr]) for nbr in nbrs]
 
 				# Sort by frequency
 				mf_filter = list(map(lambda y:self.app2vec_model.wv.index2word[y[0]],sorted(scoring,key = lambda x:x[1],reverse = True)))
@@ -1817,5 +1817,4 @@ class MF:
 		Computer the full matrix using the resultant biases, P and Q
 		"""
 		return self.b + self.b_u[:,np.newaxis] + self.b_i[np.newaxis:,] + self.P.dot(self.Q.T)
-	
 	
