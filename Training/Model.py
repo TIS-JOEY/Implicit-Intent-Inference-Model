@@ -1313,8 +1313,7 @@ class ANN(processData,BILSTM,WordSemantic):
 		#train the app2vec. num_tree is the number of your ANN forest.
 		ann_model.build(num_tree)
 
-		#save the model
-		ann_model.save(self.ann_model_path)
+		return ann_model
 		
 	def ANN(self,num_tree,for_evaluate = False,lstm = False,ranker = 'mv'):
 		'''
@@ -1355,10 +1354,7 @@ class ANN(processData,BILSTM,WordSemantic):
 		for num_tree in num_trees:
 			
 			# Build ANN
-			self._ANN_builder(num_tree)
-
-			# Load ANN model
-			ann_model = self.load_ANN()
+			ann_model = self._ANN_builder(num_tree)
 
 			# For calculating the accuracy
 			sum = 0
@@ -1418,10 +1414,7 @@ class ANN(processData,BILSTM,WordSemantic):
 		for num_tree in num_trees:
 			
 			# Build ANN
-			self._ANN_builder(num_tree)
-
-			# Load ANN model
-			ann_model = self.load_ANN()
+			ann_model = self._ANN_builder(num_tree)
 
 			# For calculating the accuracy
 			sum = 0
@@ -1486,10 +1479,7 @@ class ANN(processData,BILSTM,WordSemantic):
 		for num_tree in num_trees:
 			
 			# Build ANN
-			self._ANN_builder(num_tree)
-
-			# Load ANN model
-			ann_model = self.load_ANN()
+			ann_model = self._ANN_builder(num_tree)
 
 			# For calculating the accuracy
 			sum = 0
@@ -1540,10 +1530,7 @@ class ANN(processData,BILSTM,WordSemantic):
 		for num_tree in num_trees:
 			
 			# Build ANN
-			self._ANN_builder(num_tree)
-
-			# Load ANN model
-			ann_model = self.load_ANN()
+			ann_model = self._ANN_builder(num_tree)
 
 			# For calculating the accuracy
 			sum = 0
@@ -1601,10 +1588,7 @@ class ANN(processData,BILSTM,WordSemantic):
 		for num_tree in num_trees:
 			
 			# Build ANN
-			self._ANN_builder(num_tree)
-
-			# Load ANN model
-			ann_model = self.load_ANN()
+			ann_model = self._ANN_builder(num_tree)
 
 			# For calculating the accuracy
 			sum = 0
@@ -1669,10 +1653,7 @@ class ANN(processData,BILSTM,WordSemantic):
 		for num_tree in num_trees:
 			
 			# Build ANN
-			self._ANN_builder(num_tree)
-
-			# Load ANN model
-			ann_model = self.load_ANN()
+			ann_model = self._ANN_builder(num_tree)
 
 			# For calculating the accuracy
 			sum = 0
@@ -1817,4 +1798,6 @@ class MF:
 		Computer the full matrix using the resultant biases, P and Q
 		"""
 		return self.b + self.b_u[:,np.newaxis] + self.b_i[np.newaxis:,] + self.P.dot(self.Q.T)
+	
+	
 	
