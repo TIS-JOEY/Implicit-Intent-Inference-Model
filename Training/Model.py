@@ -12,7 +12,7 @@ from sklearn.cluster import AffinityPropagation
 # Saver
 from sklearn.externals import joblib
 import pickle
-import json
+import json,io
 
 # Plot
 import matplotlib.pyplot as plt
@@ -80,37 +80,46 @@ class processData:
 
 	# load the training data for App2vec.
 	def load_training_data(self,raw_data_path):
+		with io.open(raw_data_path,'r',encoding = 'utf-8') as f:
+			self.training_data = json.load(f)
+		'''
 		rf = open(raw_data_path,'rb')
 		self.training_data = pickle.load(rf)
 		rf.close()
+		'''
 
 	def load_resource(self,raw_data_path):
+		result = []
+		with io.open(raw_data_path,'r',encoding = 'utf-8') as f:
+			result = json.load(f)
+
+		'''
 		rf = open(raw_data_path,'rb')
 		result = pickle.load(rf)
 		rf.close()
+		'''
 		return result
-
-	def load_text(self,raw_data_path):
-		rf = open(raw_data_path,'rb')
-		self.text = pickle.load(rf)
-		rf.close()
 
 	# save the training data for app2vec.
 	def save(self,data,write_file_path):
+		with io.open(write_file_path, 'w', encoding='utf-8') as f:
+			f.write(json.dumps(data, ensure_ascii=False))
+		'''
 		wf = open(write_file_path,'wb')
 		pickle.dump(data,wf)
 		wf.close()
-
+		'''
 	def saveToApp(self,data,write_file_path):
+		data = [[self.id2app[app] for app in row] for row in data]
+		with io.open(write_file_path, 'w', encoding='utf-8') as f:
+			f.write(json.dumps(data, ensure_ascii=False))
+		'''
 		wf = open(write_file_path,'wb')
 		data = [[self.id2app[app] for app in row] for row in data]
 		pickle.dump(data,wf)
 		wf.close()
+		'''
 
-	def saveText(self,data,write_file_path):
-		wf = open(write_file_path,'wb')
-		pickle.dump(data,wf)
-		wf.close()
 
 	# load R1 resource
 	def processR1(self,R1_path,save = False):
@@ -178,11 +187,27 @@ class processData:
 				
 			#Select cut mode
 			else:
-				self.training_data.append([app for ele_app_list in [row.split(' ')[1] for index,row in df.iterrows()] for app in each_app_list.split(';') if app not in self.stop_app])
+				for item in all_data:
+					data,text = item
+
+					each_app_list = data.split(';')
+					result = []
+
+					for app in each_app_list:
+						if app not in self.goal_app:
+							continue
+						else:
+							result.append(app)
+
+					if result:
+						self.text.append(text)
+						self.training_data.append(result)
+
+				#self.training_data.append([app for ele_app_list in [row.split(' ')[1] for index,row in df.iterrows()] for app in each_app_list.split(';') if app not in self.stop_app])
 
 			if save:
 				self.save(self.training_data[data_length:],'data/training_data/R2_data.txt')
-				self.saveText(self.text[text_length:],'data/training_data/R2_text.txt')
+				self.save(self.text[text_length:],'data/training_data/R2_text.txt')
 
 	def _processR2(self,all_data):
 		
@@ -230,11 +255,27 @@ class processData:
 				
 			#Select cut mode
 			else:
-				self.training_data.append([app for ele_app_list in [row.split(' ')[1] for index,row in df.iterrows()] for app in each_app_list.split(';') if app not in self.stop_app])
+				for item in all_data:
+					data,text = item
+
+					each_app_list = data.split(';')
+					result = []
+
+					for app in each_app_list:
+						if app not in self.goal_app:
+							continue
+						else:
+							result.append(app)
+
+					if result:
+						self.text.append(text)
+						self.training_data.append(result)
+
+				#self.training_data.append([app for ele_app_list in [row.split(' ')[1] for index,row in df.iterrows()] for app in each_app_list.split(';') if app not in self.stop_app])
 
 			if save:
 				self.save(self.training_data[data_length:],'data/training_data/R3_data.txt')
-				self.saveText(self.text[text_length:],'data/training_data/R3_text.txt')
+				self.save(self.text[text_length:],'data/training_data/R3_text.txt')
 
 	# for classifying.
 	def classify_data(self,filepath):
@@ -260,7 +301,7 @@ class processData:
 	def mf_model(self,app2vec_model,K = 2,alpha = 0.1,beta = 0.01, iterations = 1000,retrain = False):
 
 		if os.path.exists('data/training_data/rating_matrix.txt') and not retrain:
-			return self.load_resource('data/training_data/rating_matrix.txt')
+			return np.array(self.load_resource('data/training_data/rating_matrix.txt'))
 
 		else:
 			length = len(app2vec_model.wv.syn0)
@@ -289,7 +330,7 @@ class processData:
 
 			rating_matrix = mf.full_matrix()
 
-			self.save(rating_matrix,'data/training_data/rating_matrix.txt')
+			#self.save(rating_matrix.tolist(),'data/training_data/rating_matrix.txt')
 
 			return rating_matrix
 
@@ -444,9 +485,9 @@ class processData:
 		# Load Testing data
 		X,y = self.training_data_with_doc()
 
-		combined = list(zip(X, y))
-		random.shuffle(combined)
-		X[:], y[:] = zip(*combined)
+		#combined = list(zip(X, y))
+		#random.shuffle(combined)
+		#X[:], y[:] = zip(*combined)
 
 		X,X_text = zip(*X)
 
@@ -498,7 +539,7 @@ class processData:
 		self.processR2('data/resources/R2.csv',save)
 		self.processR3('data/resources/R3.csv',save)
 
-		if not os.path.exists('data/training_data/app2vec_training_data.txt'):
+		if not save:
 			self.save(self.training_data,'data/training_data/app2vec_training_data.txt')
 
 class App2Vec(processData):
@@ -635,7 +676,7 @@ class BILSTM:
 		model.add(Bidirectional(LSTM(rnn_size, activation="relu"),input_shape=(self.max_len, self.vector_dim)))
 		model.add(Dropout(0.5))
 		model.add(Dense(self.vector_dim))
-		
+			
 		optimizer = Adam(lr=learning_rate)
 		callbacks=[EarlyStopping(patience=4, monitor='val_loss')]
 
@@ -643,24 +684,24 @@ class BILSTM:
 
 		model.compile(loss= model_loss, optimizer='rmsprop', metrics=[])
 		print('LSTM model built.')
-		# 'cosine_proximity'
+			# 'cosine_proximity'
 
 		callbacks=[EarlyStopping(patience=2, monitor='val_loss'),
 				   ModelCheckpoint(filepath='data/log' + "/" + 'my_model_sequence_lstm.{epoch:02d}.hdf5',\
-								   monitor='val_loss', verbose=1, mode='auto', period=5)]
+									monitor='val_loss', verbose=1, mode='auto', period=5)]
 
 		history = model.fit(X_train, y_train,
-				 batch_size=batch_size,
-				 shuffle=True,
-				 epochs=epochs,
-				 callbacks=callbacks,
-				 validation_split=0.1)
+					 batch_size=batch_size,
+					 shuffle=True,
+					 epochs=epochs,
+					 callbacks=callbacks,
+					 validation_split=0.1)
 
 		#self.make_BI_LSTM_plot(history)
 		if not for_evaluate:
 			model.save(store_path)
 
-		return model
+		return model	
 
 	def make_BI_LSTM_plot(self,history):
 		hist = pd.DataFrame(history.history)
@@ -670,7 +711,7 @@ class BILSTM:
 		plt.plot(hist["val_loss"])
 		plt.show()
 		
-	def load_BI_LSTM_model(self,filename,app2vec_model):
+	def load_BI_LSTM_model(self,filename):
 
 		model = load_model(filename,custom_objects={'compute_loss':self.compute_loss,'cos_distance':self.cos_distance})
 		
@@ -884,7 +925,7 @@ class AF(processData,BILSTM,WordSemantic):
 
 					# The predicted label
 					predict_label = af_model.predict([vector])
-
+					
 					scoring = [(can,mf_matrix[X_test[app_seq_id][0]-1][self.app2vec_model.wv.vocab[can].index]) for can in self.label2app[predict_label[0]]]
 					
 					# Sort by frequency
@@ -1099,7 +1140,7 @@ class AF(processData,BILSTM,WordSemantic):
 
 					# The predicted label
 					predict_label = af_model.predict(vector_predict)
-
+					
 					scoring = [(can,mf_matrix[X_test_id[app_seq_id][0]-1][self.app2vec_model.wv.vocab[can].index]) for can in self.label2app[predict_label[0]]]
 
 					# Sort by frequency
@@ -1131,6 +1172,7 @@ class AF(processData,BILSTM,WordSemantic):
 
 		# Prepare the training and testing data
 		X_train,X_test,y_train,y_test,X_text = self.prepare_BI_LSTM_training_doc_data(self.app2vec_model,test_size = 0.3)
+
 
 		#store the training data of AF.
 		af_training_data = []
@@ -1433,7 +1475,7 @@ class ANN(processData,BILSTM,WordSemantic):
 		Without Doc2Vec
 		'''
 		
-		mf_matrix = self.mf_model(self,app2vec_model,K = 2,alpha = 0.1,beta = 0.01, iterations = 1000)
+		mf_matrix = self.mf_model(self.app2vec_model,K = 2,alpha = 0.1,beta = 0.01, iterations = 1000)
 
 		# Load Testing data
 		X,y = self.training_data_without_doc()
@@ -1616,7 +1658,7 @@ class ANN(processData,BILSTM,WordSemantic):
 
 	def evaluate_ANN_BILSTM_mf(self,num_trees,for_evaluate):
 
-		mf_matrix = self.mf_model(self,app2vec_model,K = 2,alpha = 0.1,beta = 0.01, iterations = 1000)
+		mf_matrix = self.mf_model(self.app2vec_model,K = 2,alpha = 0.1,beta = 0.01, iterations = 1000)
 
 		# Prepare the training and testing data
 		X_train,X_test,y_train,y_test,X_train_id,X_test_id = self.prepare_BI_LSTM_training_data(self.app2vec_model,test_size = 0.3)
@@ -1775,3 +1817,4 @@ class MF:
 		Computer the full matrix using the resultant biases, P and Q
 		"""
 		return self.b + self.b_u[:,np.newaxis] + self.b_i[np.newaxis:,] + self.P.dot(self.Q.T)
+	
