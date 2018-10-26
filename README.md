@@ -72,7 +72,6 @@ bilstm.get_model(epochs = 50,batch_size = 30)
 ## Matrix Factorization
 ```
 p_data = processData()
-p_data.mf_model()
 
 app2vec_model = Word2Vec.load('data/Model/app2vec.model')
 
