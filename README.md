@@ -77,7 +77,11 @@ p_data.mf_model()
 app2vec_model = Word2Vec.load('data/Model/app2vec.model')
 
 # Train the Matrix Factorization model.
-p_data.mf_model(app2vec_model = app2vec_model, K = 2, alpha = 0.1, beta = 0.01, iterations = 1000, retrain = True)
+p_data.mf_model(app2vec_model = app2vec_model, 
+		K = 2, alpha = 0.1, 
+		beta = 0.01, 
+		iterations = 1000, 
+		retrain = True)
 ```
 
 ## ANN
@@ -88,7 +92,6 @@ ann = ANN(app2vec_model_path = 'data/Model/app2vec.model',ann_model_path = 'data
 # Goal: Find the best parameters
 # With BILSTM, set lstm to True, vice versa.
 # You can set ranker to 'mv'(major voting filter), 'doc'(semantic filter), 'mf'(matrix factorization filter)
-# and vice versa.
 ann.ANN(num_tree = range(10000,20001,10000),
         for_evaluate = True,
         lstm = True,
