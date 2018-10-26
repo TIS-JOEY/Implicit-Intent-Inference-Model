@@ -462,8 +462,8 @@ class processData:
 		if test_size:
 
 			size = int(len(X_training_data)*(1-test_size))
-			X_train = X_training_data[:size]
-			y_train = y_training_data[:size]
+			X_train = X_training_data
+			y_train = y_training_data
 			X_train_id = X[:size]
 			X_test_id = X[size:]
 			X_test = X_training_data[size:]
@@ -520,8 +520,8 @@ class processData:
 		if test_size:
 
 			size = int(len(X_training_data)*(1-test_size))
-			X_train = X_training_data[:size]
-			y_train = y_training_data[:size]
+			X_train = X_training_data
+			y_train = y_training_data
 
 			X_test = X_training_data[size:]
 			y_test = y[size:]
@@ -1032,7 +1032,7 @@ class AF(processData,BILSTM,WordSemantic):
 	def evaluate_AF_BILSTM_mv(self,max_iter,preference,for_evaluate):
 		
 		# Prepare the training and testing data
-		X_train,X_test,y_train,y_test,X_train_id,X_test_id = self.prepare_BI_LSTM_training_data(self.app2vec_model,test_size = 0.3)
+		X_train,X_test,y_train,y_test,X_train_id,X_test_id = self.prepare_BI_LSTM_training_data(self.app2vec_model,test_size = 0.9)
 
 		#store the training data of AF.
 		af_training_data = []
@@ -1103,7 +1103,7 @@ class AF(processData,BILSTM,WordSemantic):
 		mf_matrix = self.mf_model(self.app2vec_model,K = 2,alpha = 0.1,beta = 0.01, iterations = 1000)
 
 		# Prepare the training and testing data
-		X_train,X_test,y_train,y_test,X_train_id,X_test_id = self.prepare_BI_LSTM_training_data(self.app2vec_model,test_size = 0.3)
+		X_train,X_test,y_train,y_test,X_train_id,X_test_id = self.prepare_BI_LSTM_training_data(self.app2vec_model,test_size = 0.9)
 
 		#store the training data of AF.
 		af_training_data = []
@@ -1171,7 +1171,7 @@ class AF(processData,BILSTM,WordSemantic):
 	def evaluate_AF_BILSTM_doc(self,max_iter,preference,for_evaluate):
 
 		# Prepare the training and testing data
-		X_train,X_test,y_train,y_test,X_text = self.prepare_BI_LSTM_training_doc_data(self.app2vec_model,test_size = 0.3)
+		X_train,X_test,y_train,y_test,X_text = self.prepare_BI_LSTM_training_doc_data(self.app2vec_model,test_size = 0.9)
 
 
 		#store the training data of AF.
@@ -1532,7 +1532,7 @@ class ANN(processData,BILSTM,WordSemantic):
 	def evaluate_ANN_BILSTM_mv(self,num_trees,for_evaluate):
 
 		# Prepare the training and testing data
-		X_train,X_test,y_train,y_test,X_train_id,X_test_id = self.prepare_BI_LSTM_training_data(self.app2vec_model,test_size = 0.3)
+		X_train,X_test,y_train,y_test,X_train_id,X_test_id = self.prepare_BI_LSTM_training_data(self.app2vec_model,test_size = 0.9)
 
 		# Train BILSTM model
 		BI_LSTM_model = self.train_BILSTM(X_train,y_train,for_evaluate = for_evaluate)
@@ -1593,7 +1593,7 @@ class ANN(processData,BILSTM,WordSemantic):
 	def evaluate_ANN_BILSTM_doc(self,num_trees,for_evaluate):
 
 		# Prepare the training and testing data
-		X_train,X_test,y_train,y_test,X_text = self.prepare_BI_LSTM_training_doc_data(self.app2vec_model,test_size = 0.3)
+		X_train,X_test,y_train,y_test,X_text = self.prepare_BI_LSTM_training_doc_data(self.app2vec_model,test_size = 0.9)
 
 		# Train BILSTM model
 		BI_LSTM_model = self.train_BILSTM(X_train,y_train,for_evaluate = for_evaluate)
@@ -1661,7 +1661,7 @@ class ANN(processData,BILSTM,WordSemantic):
 		mf_matrix = self.mf_model(self.app2vec_model,K = 2,alpha = 0.1,beta = 0.01, iterations = 1000)
 
 		# Prepare the training and testing data
-		X_train,X_test,y_train,y_test,X_train_id,X_test_id = self.prepare_BI_LSTM_training_data(self.app2vec_model,test_size = 0.3)
+		X_train,X_test,y_train,y_test,X_train_id,X_test_id = self.prepare_BI_LSTM_training_data(self.app2vec_model,test_size = 0.9)
 
 		# Train BILSTM model
 		BI_LSTM_model = self.train_BILSTM(X_train,y_train,for_evaluate = for_evaluate)
@@ -1817,4 +1817,5 @@ class MF:
 		Computer the full matrix using the resultant biases, P and Q
 		"""
 		return self.b + self.b_u[:,np.newaxis] + self.b_i[np.newaxis:,] + self.P.dot(self.Q.T)
+	
 	
