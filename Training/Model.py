@@ -50,7 +50,7 @@ from keras.optimizers import Adam
 from keras.models import load_model
 
 class processData:
-	def __init__(self, goal_app_path = 'data/goal_app.txt', mapping_path = 'data/training_data/apps.csv', ignore_all = False,app2vec_model_path = None):
+	def __init__(self, goal_app_path = 'data/goal_app.txt', mapping_path = 'data/training_data/apps.csv', ignore_all = True,app2vec_model_path = None):
 		'''
 		mapping：Store the mapping of id and app_name
 		training_data：Store the training data
@@ -143,7 +143,18 @@ class processData:
 					
 				#Select cut mode
 				else:
-					self.training_data.append([self.id2app[app] for ele_app_list in each_app_seq.tolist() for app in ele_app_list.split(' ') if self.id2app[app] in self.goal_app])
+					for each_app_list in each_app_seq.split(' '):
+
+						result = []
+						for app in each_app_list:
+							app = self.id2app[app]
+							if app in self.goal_app:
+								result.append(app)
+
+					if result:
+						self.training_data.append(result)
+
+					#self.training_data.append([self.id2app[app] for ele_app_list in each_app_seq.tolist() for app in ele_app_list.split(' ') if self.id2app[app] in self.goal_app])
 
 			if save:
 				self.save(self.training_data[data_length:],'data/training_data/R1_data.txt')
@@ -1145,7 +1156,7 @@ class AF(processData,BILSTM,WordSemantic):
 		
 		#mf_matrix = self.mf_model(self.app2vec_model,K = 2,alpha = 0.1,beta = 0.01, iterations = 1000)
 		mf_matrix = self.wmf_model(self.app2vec_model)
-		
+
 		# Prepare the training and testing data
 		X_train,X_test,y_train,y_test,X_train_id,X_test_id = self.prepare_BI_LSTM_training_data(self.app2vec_model,test_size = 0.9)
 
@@ -1848,7 +1859,6 @@ class MF:
 		Computer the full matrix using the resultant biases, P and Q
 		"""
 		return self.b + self.b_u[:,np.newaxis] + self.b_i[np.newaxis:,] + self.P.dot(self.Q.T)
-	
 	
 	
 	
