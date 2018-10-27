@@ -50,7 +50,7 @@ from keras.optimizers import Adam
 from keras.models import load_model
 
 class processData:
-	def __init__(self, goal_app_path = 'data/goal_app.txt', mapping_path = 'data/training_data/apps.csv', ignore_all = True,app2vec_model_path = None):
+	def __init__(self, goal_app_path = 'data/goal_app.txt', mapping_path = 'data/training_data/apps.csv', ignore_all = False,app2vec_model_path = None):
 		'''
 		mapping：Store the mapping of id and app_name
 		training_data：Store the training data
@@ -143,9 +143,10 @@ class processData:
 					
 				#Select cut mode
 				else:
-					for each_app_list in each_app_seq.split(' '):
-
+					for each_app_list in each_app_seq.tolist():
+						each_app_list = each_app_list.split()
 						result = []
+						print(each_app_list)
 						for app in each_app_list:
 							app = self.id2app[app]
 							if app in self.goal_app:
@@ -1859,7 +1860,6 @@ class MF:
 		Computer the full matrix using the resultant biases, P and Q
 		"""
 		return self.b + self.b_u[:,np.newaxis] + self.b_i[np.newaxis:,] + self.P.dot(self.Q.T)
-	
 	
 	
 	
