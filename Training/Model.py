@@ -46,7 +46,7 @@ from keras.optimizers import Adam
 from keras.models import load_model
 
 class processData:
-	def __init__(self, goal_app_path = 'data/goal_app.txt', mapping_path = 'data/training_data/apps.csv', ignore_all = True,app2vec_model_path = None):
+	def __init__(self, goal_app_path = 'data/goal_app.txt', mapping_path = 'data/training_data/apps.csv', ignore_all = False,app2vec_model_path = None):
 		'''
 		mapping：Store the mapping of id and app_name
 		training_data：Store the training data
@@ -139,7 +139,7 @@ class processData:
 					
 				#Select cut mode
 				else:
-					self.training_data.append([app for ele_app_list in each_app_seq.tolist() for app in each_app_list.split(' ') if app not in stop_app])
+					self.training_data.append([self.id2app[app] for ele_app_list in each_app_seq.tolist() for app in ele_app_list.split(' ') if self.id2app[app] in self.goal_app])
 
 			if save:
 				self.save(self.training_data[data_length:],'data/training_data/R1_data.txt')
@@ -536,10 +536,10 @@ class processData:
 	def setup_training_data(self,save = False):
 		self.generateClass('data/training_data/class_map.xlsx',save)
 		self.processR1('data/resources/R1.csv',save)
-		self.processR2('data/resources/R2.csv',save)
-		self.processR3('data/resources/R3.csv',save)
+		#self.processR2('data/resources/R2.csv',save)
+		#self.processR3('data/resources/R3.csv',save)
 
-		if not save:
+		if save:
 			self.save(self.training_data,'data/training_data/app2vec_training_data.txt')
 
 class App2Vec(processData):
@@ -557,7 +557,8 @@ class App2Vec(processData):
 		'''
 
 		if not self.training_data:
-			self.load_training_data('data/training_data/app2vec_training_data.txt')
+			self.setup_training_data()
+			#self.load_training_data('data/training_data/app2vec_training_data.txt')
 		#Views more, https://radimrehurek.com/gensim/models/word2vec.html
 		model = Word2Vec(self.training_data,sg=sg,size = size,window = window,seed = seed,min_count = min_count,iter = iter,compute_loss=compute_loss,workers = 5)
 
@@ -1344,14 +1345,16 @@ class ANN(processData,BILSTM,WordSemantic):
 		'''
 		Without Doc2Vec
 		'''
-
+		import copy
 		# Load Testing data
 		X,y = self.training_data_without_doc()
 
-		# Get Testing data
-		X_train,X_test,y_train,y_test = train_test_split(X,y, test_size=0.9, random_state=0, shuffle = True)
+
 
 		for num_tree in num_trees:
+
+			# Get Testing data
+			X_train,X_test,y_train,y_test = train_test_split(X,y, test_size=0.7, shuffle = True)
 			
 			# Build ANN
 			ann_model = self._ANN_builder(num_tree)
@@ -1373,16 +1376,16 @@ class ANN(processData,BILSTM,WordSemantic):
 				# Sort by frequency
 				major_voting_filter = [app_with_count[0] for app_with_count in counter.most_common()]
 
-				y = set([self.app2class[i] for i in y_test[app_seq_id]] )
+				y_compare = set([self.app2class[i] for i in y_test[app_seq_id]] )
 
 				# Compare with true labels
-				result = self.checkClass(major_voting_filter,len(y))
+				result = self.checkClass(major_voting_filter,len(y_compare))
 
 				# Count the correct records
-				sum+=len(set(result).intersection(y))
+				sum+=len(set(result).intersection(y_compare))
 
 				# Count the total number
-				total_num+=len(y)
+				total_num+=len(y_compare)
 
 			print('num_tree = ',num_tree)
 			print('accuracy = ',sum/total_num)
@@ -1798,6 +1801,5 @@ class MF:
 		Computer the full matrix using the resultant biases, P and Q
 		"""
 		return self.b + self.b_u[:,np.newaxis] + self.b_i[np.newaxis:,] + self.P.dot(self.Q.T)
-	
 	
 	
