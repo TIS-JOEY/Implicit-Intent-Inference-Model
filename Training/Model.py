@@ -146,7 +146,7 @@ class processData:
 					for each_app_list in each_app_seq.tolist():
 						each_app_list = each_app_list.split()
 						result = []
-						print(each_app_list)
+						
 						for app in each_app_list:
 							app = self.id2app[app]
 							if app in self.goal_app:
