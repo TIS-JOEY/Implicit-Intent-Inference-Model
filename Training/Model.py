@@ -1,6 +1,7 @@
 # Scientific computing
 import pandas as pd
 import numpy as np
+from scipy.sparse import csr_matrix
 from scipy import spatial
 
 # Model
@@ -8,6 +9,7 @@ from gensim.models import Word2Vec
 import gensim
 from annoy import AnnoyIndex
 from sklearn.cluster import AffinityPropagation
+import wmf
 
 # Saver
 from sklearn.externals import joblib
@@ -32,9 +34,11 @@ import collections
 import os
 import itertools
 import random
+import time
 
 # Preprocessing
 from nltk.tokenize import word_tokenize
+from sklearn.preprocessing import normalize
 
 # Keras
 from keras import backend as K
@@ -46,7 +50,7 @@ from keras.optimizers import Adam
 from keras.models import load_model
 
 class processData:
-	def __init__(self, goal_app_path = 'data/goal_app.txt', mapping_path = 'data/training_data/apps.csv', ignore_all = True,app2vec_model_path = None):
+	def __init__(self, goal_app_path = 'data/goal_app.txt', mapping_path = 'data/training_data/apps.csv', ignore_all = False,app2vec_model_path = None):
 		'''
 		mapping：Store the mapping of id and app_name
 		training_data：Store the training data
@@ -320,8 +324,6 @@ class processData:
 					for remain_ele in data[:pivot]+data[pivot+1:]:
 						mf_matrix[data[pivot],remain_ele]+=1
 
-			from sklearn.preprocessing import normalize
-
 			mf_matrix =  np.array(normalize(mf_matrix, norm='l2'))
 
 			mf = MF(mf_matrix, K=K, alpha=alpha, beta=beta, iterations=iterations)
@@ -333,6 +335,44 @@ class processData:
 			#self.save(rating_matrix.tolist(),'data/training_data/rating_matrix.txt')
 
 			return rating_matrix
+
+	def wmf_model(self,app2vec_model):
+		length = len(app2vec_model.wv.syn0)
+
+		if not self.training_data:
+			self.setup_training_data()
+
+		tmp_saver = collections.defaultdict(int)
+
+		for app_seq in self.training_data:
+
+			# Transfer to Index
+			map_index = list(map(lambda x:app2vec_model.wv.vocab[x].index,app_seq))
+
+			for pivot in range(len(map_index)):
+				for remain_ele in map_index[:pivot]+map_index[pivot+1:]:
+
+					tmp_saver[(map_index[pivot],remain_ele)]+=1
+
+		row = []
+		col = []
+		data = []
+		for key,value in tmp_saver.items():
+			row.append(key[0])
+			col.append(key[1])
+			data.append(value)
+
+		#data = normalize(data, norm='l2')
+		
+		R = csr_matrix((data, (row, col)), shape=(length, length))
+
+		S = wmf.log_surplus_confidence_matrix(R, alpha=2.0, epsilon=1e-6)
+
+		U, V = wmf.factorize(S, num_factors=41, lambda_reg=1e-5, num_iterations=1000, init_std=0.01, verbose=True, dtype='float32', recompute_factors=wmf.recompute_factors_bias)
+
+		result = np.dot(U,V.T)
+		
+		return result
 
 	def training_data_without_doc(self):
 
@@ -888,7 +928,8 @@ class AF(processData,BILSTM,WordSemantic):
 
 	def evaluate_af_mf(self,max_iter,preference):
 
-		mf_matrix = self.mf_model(self.app2vec_model,K = 2,alpha = 0.1,beta = 0.01, iterations = 1000)
+		#mf_matrix = self.mf_model(self.app2vec_model,K = 2,alpha = 0.1,beta = 0.01, iterations = 1000)
+		mf_matrix = self.wmf_model(self.app2vec_model)
 
 		# Load Testing data
 		X,y = self.training_data_without_doc()
@@ -1102,8 +1143,9 @@ class AF(processData,BILSTM,WordSemantic):
 
 	def evaluate_AF_BILSTM_mf(self,max_iter,preference,for_evaluate):
 		
-		mf_matrix = self.mf_model(self.app2vec_model,K = 2,alpha = 0.1,beta = 0.01, iterations = 1000)
-
+		#mf_matrix = self.mf_model(self.app2vec_model,K = 2,alpha = 0.1,beta = 0.01, iterations = 1000)
+		mf_matrix = self.wmf_model(self.app2vec_model)
+		
 		# Prepare the training and testing data
 		X_train,X_test,y_train,y_test,X_train_id,X_test_id = self.prepare_BI_LSTM_training_data(self.app2vec_model,test_size = 0.9)
 
@@ -1300,7 +1342,7 @@ class ANN(processData,BILSTM,WordSemantic):
 		return ann
 
 	def _ANN_builder(self,num_tree):
-
+		print(self.vector_dim)
 		ann_model = AnnoyIndex(self.vector_dim)
 		
 		vector = self.app2vec_model.wv.syn0
@@ -1346,10 +1388,9 @@ class ANN(processData,BILSTM,WordSemantic):
 		'''
 		Without Doc2Vec
 		'''
-		import copy
+
 		# Load Testing data
 		X,y = self.training_data_without_doc()
-
 
 
 		for num_tree in num_trees:
@@ -1472,14 +1513,16 @@ class ANN(processData,BILSTM,WordSemantic):
 		Without Doc2Vec
 		'''
 		
-		mf_matrix = self.mf_model(self.app2vec_model,K = 2,alpha = 0.1,beta = 0.01, iterations = 1000)
+		#mf_matrix = self.mf_model(self.app2vec_model,K = 2,alpha = 0.1,beta = 0.01, iterations = 1000)
+		mf_matrix = self.wmf_model(self.app2vec_model)
 
 		# Load Testing data
 		X,y = self.training_data_without_doc()
 
 		# Get Testing data
-		X_train,X_test,y_train,y_test = train_test_split(X,y, test_size=0.9, random_state=0, shuffle = True)
+		X_train,X_test,y_train,y_test = train_test_split(X,y, test_size=0.7, shuffle = True)
 
+		b = []
 		for num_tree in num_trees:
 			
 			# Build ANN
@@ -1492,14 +1535,15 @@ class ANN(processData,BILSTM,WordSemantic):
 			for app_seq_id in range(len(X_test)):
 
 				# Get their neighbor and flat it to 1D.
-				nbrs = list(itertools.chain.from_iterable([ann_model.get_nns_by_item(index-1,10) for index in X_test[app_seq_id]]))
+				#nbrs = list(itertools.chain.from_iterable([ann_model.get_nns_by_item(index-1,10) for index in X_test[app_seq_id]]))
+				nbrs = ann_model.get_nns_by_item(X_test[app_seq_id][0]-1,10)
 
 				scoring = [(nbr,mf_matrix[X_test[app_seq_id][0]-1][nbr]) for nbr in nbrs]
 
 				# Sort by frequency
 				mf_filter = list(map(lambda y:self.app2vec_model.wv.index2word[y[0]],sorted(scoring,key = lambda x:x[1],reverse = True)))
 
-				y = set([self.app2class[i] for i in y_test[app_seq_id]] )
+				y = set([self.app2class[i] for i in y_test[app_seq_id]])
 
 				# Compare with true labels
 				result = self.checkClass(mf_filter,len(y))
@@ -1509,6 +1553,7 @@ class ANN(processData,BILSTM,WordSemantic):
 
 				# Count the total number
 				total_num+=len(y)
+
 
 			print('num_tree = ',num_tree)
 			print('accuracy = ',sum/total_num)
@@ -1646,7 +1691,8 @@ class ANN(processData,BILSTM,WordSemantic):
 
 	def evaluate_ANN_BILSTM_mf(self,num_trees,for_evaluate):
 
-		mf_matrix = self.mf_model(self.app2vec_model,K = 2,alpha = 0.1,beta = 0.01, iterations = 1000)
+		#mf_matrix = self.mf_model(self.app2vec_model,K = 2,alpha = 0.1,beta = 0.01, iterations = 1000)
+		mf_matrix = self.wmf_model(self.app2vec_model)
 
 		# Prepare the training and testing data
 		X_train,X_test,y_train,y_test,X_train_id,X_test_id = self.prepare_BI_LSTM_training_data(self.app2vec_model,test_size = 0.9)
@@ -1802,4 +1848,13 @@ class MF:
 		Computer the full matrix using the resultant biases, P and Q
 		"""
 		return self.b + self.b_u[:,np.newaxis] + self.b_i[np.newaxis:,] + self.P.dot(self.Q.T)
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
