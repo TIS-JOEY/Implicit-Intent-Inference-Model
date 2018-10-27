@@ -46,7 +46,7 @@ from keras.optimizers import Adam
 from keras.models import load_model
 
 class processData:
-	def __init__(self, goal_app_path = 'data/goal_app.txt', mapping_path = 'data/training_data/apps.csv', ignore_all = False,app2vec_model_path = None):
+	def __init__(self, goal_app_path = 'data/goal_app.txt', mapping_path = 'data/training_data/apps.csv', ignore_all = True,app2vec_model_path = None):
 		'''
 		mapping：Store the mapping of id and app_name
 		training_data：Store the training data
@@ -536,8 +536,8 @@ class processData:
 	def setup_training_data(self,save = False):
 		self.generateClass('data/training_data/class_map.xlsx',save)
 		self.processR1('data/resources/R1.csv',save)
-		#self.processR2('data/resources/R2.csv',save)
-		#self.processR3('data/resources/R3.csv',save)
+		self.processR2('data/resources/R2.csv',save)
+		self.processR3('data/resources/R3.csv',save)
 
 		if save:
 			self.save(self.training_data,'data/training_data/app2vec_training_data.txt')
@@ -610,7 +610,8 @@ class App2Vec(processData):
 		X,y = self.classify_data('data/training_data/data_relevant.xlsx')
 
 		if not self.training_data:
-			self.load_training_data('data/training_data/app2vec_training_data.txt')
+			self.setup_training_data()
+			#self.load_training_data('data/training_data/app2vec_training_data.txt')
 
 		inner_cv = KFold(n_splits=5, shuffle=True, random_state=42)
 
@@ -1801,5 +1802,4 @@ class MF:
 		Computer the full matrix using the resultant biases, P and Q
 		"""
 		return self.b + self.b_u[:,np.newaxis] + self.b_i[np.newaxis:,] + self.P.dot(self.Q.T)
-	
 	
