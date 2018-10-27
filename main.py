@@ -52,31 +52,62 @@ class IMIP:
 		if model == 'ANN':
 			if lstm:
 				if doc:
-					results = self.BILSTM_ANN_with_doc_process(input_sen)
+					result = self.BILSTM_ANN_with_doc_process(input_sen)
 				else:
-					results = self.BILSTM_ANN_without_doc_process()
+					result = self.BILSTM_ANN_without_doc_process()
 			else:
 				if doc:
-					results = self.ANN_with_doc_process(input_sen)
+					result = self.ANN_with_doc_process(input_sen)
 				else:
-					results = self.ANN_without_doc_process()
+					result = self.ANN_without_doc_process()
 
 		else:
 			if lstm:
 				if doc:
-					results = self.BILSTM_AF_with_doc_process(input_sen)
+					result = self.BILSTM_AF_with_doc_process(input_sen)
 				else:
-					results = self.BILSTM_AF_without_doc_process()
+					result = self.BILSTM_AF_without_doc_process()
 			else:
 				if doc:
-					results = self.AF_with_doc_process(input_sen)
+					result = self.AF_with_doc_process(input_sen)
 				else:
-					results = self.AF_without_doc_process()
+					result = self.AF_without_doc_process()
 
-		return results
+		if lstm:
+				if ranker == 'mv':
+					result = self.BILSTM_ANN_with_mv_process()
+				elif ranker == 'mf':
+					result = self.BILSTM_ANN_with_mf_process()
+				elif ranker == 'doc':
+					result = self.BILSTM_ANN_with_doc_process(input_sen)
+			else:
+				if ranker == 'mv':
+					result = self.ANN_with_mv_process()
+				elif ranker == 'mf':
+					result = self.ANN_with_mf_process()
+				elif ranker == 'doc':
+					result = self.ANN_with_doc_process(input_sen)
+
+		else:
+			if lstm:
+				if ranker == 'mv':
+					result = self.BILSTM_AF_with_mv_process()
+				elif ranker == 'mf':
+					result = self.BILSTM_AF_with_mf_process()
+				elif ranker == 'doc':
+					result = self.BILSTM_AF_with_doc_process(input_sen)
+			else:
+				if ranker == 'mv':
+					result = self.AF_with_mv_process()
+				elif ranker == 'mf':
+					result = self.AF_with_mf_process()
+				elif ranker == 'doc':
+					result = self.AF_with_doc_process(input_sen)
+
+		return result
 
 
-	def ANN_without_doc_process(self):
+	def ANN_with_mv_process(self):
 
 		# transfer to app
 		apps = [intentApp[i] for i in self.explicit_intent]
@@ -85,13 +116,13 @@ class IMIP:
 		ann_model = self.ann.load_ANN()
 
 		# Get ids
-		indexs = [self.app2vec_model.wv.vocab[app].index+1 for app in apps]
+		indexs = [self.app2vec_model.wv.vocab[app].index for app in apps]
 
 		# Get their neighbor and flat it to 1D.
 		nbrs = list(itertools.chain.from_iterable([self.ann_model.get_nns_by_item(index,10) for index in indexs]))
 		
 		# Transfer to app and avoid duplicate
-		nbrs = [self.app2vec_model.wv.index2word[nbr-1] for nbr in nbrs if self.app2vec_model.wv.index2word[nbr-1] not in apps]
+		nbrs = [self.app2vec_model.wv.index2word[nbr] for nbr in nbrs if self.app2vec_model.wv.index2word[nbr] not in apps]
 
 		counter = collections.Counter(nbrs)
 
@@ -99,6 +130,40 @@ class IMIP:
 
 		# Transfer to class
 		result = self.p_data.checkClass(major_voting_filter,5)
+
+		return result
+
+	def ANN_with_mf_process(self,mf_filepath = 'data/model/mf_matrix.txt'):
+
+		mf_matrix = self.load_resources(mf_filepath)
+
+		# transfer to app
+		apps = [intentApp[i] for i in self.explicit_intent]
+
+		# Load ANN model
+		ann_model = self.ann.load_ANN()
+
+		# Get ids
+		indexs = [self.app2vec_model.wv.vocab[app].index for app in apps]
+
+		# Get their neighbor and flat it to 1D.
+		nbrs = list(itertools.chain.from_iterable([self.ann_model.get_nns_by_item(index,10) for index in indexs]))
+
+		scoring = {}
+		for app in indexs:
+			for nbr in nbrs:
+				if nbr in scoring:
+					scoring[nbr] = max(scoring[nbr],mf_matrix[app-1][nbr])
+				else:
+					scoring[nbr] = mf_matrix[app-1][nbr]
+
+		# Sort by frequency
+		mf_filter = list(map(lambda y:self.app2vec_model.wv.index2word[y],sorted(scoring,key = scoring.get,reverse = True)))
+
+		mf_filter = list(filter(lambda x:x in apps,mf_filter))
+
+		# Compare with true labels
+		result = self.p_data.checkClass(mf_filter,5)
 
 		return result
 
@@ -111,13 +176,13 @@ class IMIP:
 		ann_model = self.ann.load_ANN()
 
 		# Get ids
-		indexs = [self.app2vec_model.wv.vocab[app].index+1 for app in apps]
+		indexs = [self.app2vec_model.wv.vocab[app].index for app in apps]
 
 		# Get their neighbor and flat it to 1D.
 		nbrs = list(itertools.chain.from_iterable([self.ann_model.get_nns_by_item(index,5) for index in indexs]))
 		
 		# Transfer to app and avoid duplicate
-		nbrs = [self.app2vec_model.wv.index2word[nbr-1] for nbr in nbrs if self.app2vec_model.wv.index2word[nbr] not in apps]
+		nbrs = [self.app2vec_model.wv.index2word[nbr] for nbr in nbrs if self.app2vec_model.wv.index2word[nbr] not in apps]
 
 		pool = multiprocessing.Pool()
 		manager = Manager()
@@ -140,7 +205,7 @@ class IMIP:
 
 		return result
 
-	def AF_without_doc_process(self):
+	def AF_with_mv_process(self):
 
 		# Load AF model
 		af_model = self.af.get_af_model()
@@ -161,7 +226,44 @@ class IMIP:
 		major_voting_filter = [app_with_count[0] for app_with_count in counter.most_common() if app_with_count[0] not in apps]
 
 		result = self.p_data.checkClass(major_voting_filter,5)
+
+	def AF_with_mf_process(self,mf_filepath = 'data/model/mf_matrix.txt'):
 		
+		mf_matrix = self.load_resources(mf_filepath)
+
+		# Load AF model
+		af_model = self.af.get_af_model()
+
+		# transfer to app
+		apps = [intentApp[i] for i in self.explicit_intent]
+
+		# Get ids
+		indexs = [self.app2vec_model.wv.vocab[app].index for app in apps]
+
+		# Get the input vector
+		vector = np.mean([self.app2vec_model[app] for app in apps],0)
+
+		# The predicted label
+		predict_label = af_model.predict([vector])
+
+		predict_app = [self.app2vec_model.wv[app].index for app in self.af.label2app[predict_label[0]]]
+
+		scoring = {}
+		for app in indexs:
+			for nbr in predict_app:
+				if nbr in scoring:
+					scoring[nbr] = max(scoring[nbr],mf_matrix[app-1][nbr])
+				else:
+					scoring[nbr] = mf_matrix[app-1][nbr]
+
+		# Sort by frequency
+		mf_filter = list(map(lambda y:self.app2vec_model.wv.index2word[y[0]],sorted(scoring,key = scoring.get,reverse = True)))
+
+		mf_filter = list(filter(lambda x:x in apps,mf_filter))
+
+		# Compare with true labels
+		result = self.p_data.checkClass(mf_filter,5)
+
 	def AF_with_doc_process(self,input_sen):
 
 		# Load AF model
@@ -200,10 +302,10 @@ class IMIP:
 
 		return result
 
-	def BILSTM_ANN_without_doc_process(self,filepath = 'data/BILSTM_model.h5'):
+	def BILSTM_ANN_with_mv_process(self,bilstm_filepath = 'data/model/BILSTM_model.h5'):
 
 		# Load BILSTM model
-		bilstm_model = self.bilstm.load_BI_LSTM_model(filepath)
+		bilstm_model = self.bilstm.load_BI_LSTM_model(bilstm_filepath)
 
 		# Load ANN model
 		ann_model = self.ann.load_ANN()
@@ -218,7 +320,7 @@ class IMIP:
 		nbrs = ann_model.get_nns_by_vector(vector_predict,10)
 
 		# Transfer them to apps and avoid duplicate
-		nbrs = [self.app2vec_model.wv.index2word[nbr - 1] for nbr in nbrs if self.app2vec_model.wv.index2word[nbr] not in apps]
+		nbrs = [self.app2vec_model.wv.index2word[nbr] for nbr in nbrs if self.app2vec_model.wv.index2word[nbr] not in apps]
 
 		counter = collections.Counter(nbrs)
 
@@ -226,10 +328,47 @@ class IMIP:
 
 		result = self.p_data.checkClass(major_voting_filter,5)
 
-	def BILSTM_ANN_with_doc_process(self,input_sen, filepath = 'data/BILSTM_model.h5'):
+	def BILSTM_ANN_with_mf_process(self,mf_filepath = 'data/model/mf_matrix.txt',bilstm_filepath = 'data/model/BILSTM_model.h5'):
+
+		mf_matrix = self.load_resources(mf_filepath)
 
 		# Load BILSTM model
-		bilstm_model = self.bilstm.load_BI_LSTM_model(filepath)
+		bilstm_model = self.bilstm.load_BI_LSTM_model(bilstm_filepath)
+
+		# Load ANN model
+		ann_model = self.ann.load_ANN()
+
+		# transfer to index
+		apps = [self.app2vec_model.wv.vocab[intentApp[i]].index+1 for i in self.explicit_intent]
+
+		# predicted vector
+		vector_predict = self.bilstm.predict(apps,bilstm_model)
+
+		# Get their neighbors.
+		nbrs = ann_model.get_nns_by_vector(vector_predict,10)
+
+		scoring = {}
+		for app in indexs:
+			for nbr in nbrs:
+				if nbr in scoring:
+					scoring[nbr] = max(scoring[nbr],mf_matrix[app-1][nbr])
+				else:
+					scoring[nbr] = mf_matrix[app-1][nbr]
+
+		# Sort by frequency
+		mf_filter = list(map(lambda y:self.app2vec_model.wv.index2word[y],sorted(scoring,key = scoring.get,reverse = True)))
+
+		mf_filter = list(filter(lambda x:x in apps,mf_filter))
+
+		# Compare with true labels
+		result = self.p_data.checkClass(mf_filter,5)
+
+		return result
+
+	def BILSTM_ANN_with_doc_process(self,input_sen, bilstm_filepath = 'data/model/BILSTM_model.h5'):
+
+		# Load BILSTM model
+		bilstm_model = self.bilstm.load_BI_LSTM_model(bilstm_filepath)
 
 		# Load ANN model
 		ann_model = self.ann.load_ANN()
@@ -244,7 +383,7 @@ class IMIP:
 		nbrs = ann_model.get_nns_by_vector(vector_predict,len(y_test[app_seq_id]))
 
 		# Transfer to app
-		nbr_app = [self.app2vec_model.wv.index2word[nbr - 1] for nbr in nbrs if self.app2vec_model.wv.index2word[nbr] not in apps]
+		nbr_app = [self.app2vec_model.wv.index2word[nbr] for nbr in nbrs if self.app2vec_model.wv.index2word[nbr] not in apps]
 
 		pool = multiprocessing.Pool()
 		manager = Manager()
@@ -265,10 +404,10 @@ class IMIP:
 
 		result = self.p_data.checkClass(semantic_filter,5)
 
-	def BILSTM_AF_without_doc_process(self,filepath = 'data/BILSTM_model.h5'):
+	def BILSTM_AF_with_mv_process(self,bilstm_filepath = 'data/model/BILSTM_model.h5'):
 
 		# Load BILSTM model
-		bilstm_model = self.bilstm.load_BI_LSTM_model(filepath)
+		bilstm_model = self.bilstm.load_BI_LSTM_model(bilstm_filepath)
 
 		# Load AF model
 		af_model = self.af.get_af_model()
@@ -290,10 +429,51 @@ class IMIP:
 
 		result = self.p_data.checkClass(major_voting_filter,5)
 
-	def BILSTM_AF_with_doc_process(self,input_sen,filepath = 'data/BILSTM_model.h5'):
-		
+		return result
+
+	def BILSTM_AF_with_mv_process(self,mf_filepath = 'data/model/mf_matrix.txt',bilstm_filepath = 'data/model/BILSTM_model.h5'):
+
+		mf_matrix = self.load_resources(mf_filepath)
+
 		# Load BILSTM model
-		bilstm_model = self.bilstm.load_BI_LSTM_model(filepath)
+		bilstm_model = self.bilstm.load_BI_LSTM_model(bilstm_filepath)
+
+		# Load AF model
+		af_model = self.af.get_af_model()
+
+		# transfer to app
+		apps = [self.app2vec_model.wv.vocab[intentApp[i]].index+1 for i in self.explicit_intent]
+
+		# predicted vector
+		vector_predict = self.bilstm.predict(apps,bilstm_model)
+
+		# The predicted label
+		predict_label = af_model.predict([vector_predict])
+
+		predict_app = [self.app2vec_model.wv[app].index for app in self.af.label2app[predict_label[0]]]
+
+		scoring = {}
+		for app in indexs:
+			for nbr in predict_app:
+				if nbr in scoring:
+					scoring[nbr] = max(scoring[nbr],mf_matrix[app-1][nbr])
+				else:
+					scoring[nbr] = mf_matrix[app-1][nbr]
+
+		# Sort by frequency
+		mf_filter = list(map(lambda y:self.app2vec_model.wv.index2word[y],sorted(scoring,key = scoring.get,reverse = True)))
+
+		mf_filter = list(filter(lambda x:x in apps,mf_filter))
+
+		# Compare with true labels
+		result = self.p_data.checkClass(mf_filter,5)
+
+		return result
+
+	def BILSTM_AF_with_doc_process(self,input_sen,bilstm_filepath = 'data/model/BILSTM_model.h5'):
+
+		# Load BILSTM model
+		bilstm_model = self.bilstm.load_BI_LSTM_model(bilstm_filepath)
 
 		# Load AF model
 		af_model = self.af.get_af_model()
