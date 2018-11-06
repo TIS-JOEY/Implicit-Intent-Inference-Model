@@ -144,16 +144,21 @@ class processData:
 				#Select cut mode
 				else:
 					for each_app_list in each_app_seq.tolist():
-						each_app_list = each_app_list.split()
+						
+						each_app_ele = each_app_list.split()
+
 						result = []
 						
-						for app in each_app_list:
-							app = self.id2app[app]
-							if app in self.goal_app:
-								result.append(app)
+						for app in each_app_ele:
+							app_name = self.id2app[app]
 
-					if result:
-						self.training_data.append(result)
+							
+							if app_name in self.goal_app:
+								result.append(app_name)
+
+
+						if len(result)>=2:
+							self.training_data.append(result)
 
 					#self.training_data.append([self.id2app[app] for ele_app_list in each_app_seq.tolist() for app in ele_app_list.split(' ') if self.id2app[app] in self.goal_app])
 
@@ -215,7 +220,7 @@ class processData:
 						else:
 							result.append(app)
 
-					if result:
+					if len(result)>=2:
 						self.text.append(text)
 						self.training_data.append(result)
 
@@ -283,7 +288,7 @@ class processData:
 						else:
 							result.append(app)
 
-					if result:
+					if len(result)>=2:
 						self.text.append(text)
 						self.training_data.append(result)
 
@@ -344,7 +349,7 @@ class processData:
 
 			rating_matrix = mf.full_matrix()
 
-			#self.save(rating_matrix.tolist(),'data/training_data/rating_matrix.txt')
+			self.save(rating_matrix.tolist(),'data/training_data/rating_matrix.txt')
 
 			return rating_matrix
 
@@ -485,7 +490,8 @@ class processData:
 
 		X_vector = [[app2vec_model.wv.syn0[app_index-1] for app_index in each_app_seq] for each_app_seq in X]
 		X_vector = pad_sequences(maxlen = max_len,sequences = X_vector,padding = 'post',value = 0)
-		y_vector = [np.mean([app2vec_model[each_y] for each_y in seq_y],0) for seq_y in y]
+		y_vector = [np.mean([app2vec_model[each_y] for each_y in seq_y],0) for seq_y in y if seq_y!=np.nan]
+
 		
 
 		#initiation the training set
@@ -588,6 +594,7 @@ class processData:
 	def setup_training_data(self,save = False):
 		self.generateClass('data/training_data/class_map.xlsx',save)
 		self.processR1('data/resources/R1.csv',save)
+		
 		self.processR2('data/resources/R2.csv',save)
 		self.processR3('data/resources/R3.csv',save)
 
@@ -610,7 +617,10 @@ class App2Vec(processData):
 
 		if not self.training_data:
 			self.setup_training_data()
+
+
 			#self.load_training_data('data/training_data/app2vec_training_data.txt')
+
 		#Views more, https://radimrehurek.com/gensim/models/word2vec.html
 		model = Word2Vec(self.training_data,sg=sg,size = size,window = window,seed = seed,min_count = min_count,iter = iter,compute_loss=compute_loss,workers = 5)
 
@@ -1860,11 +1870,38 @@ class MF:
 		Computer the full matrix using the resultant biases, P and Q
 		"""
 		return self.b + self.b_u[:,np.newaxis] + self.b_i[np.newaxis:,] + self.P.dot(self.Q.T)
+
+
+
+
+if __name__ == '__main__':
+
+	af = AF(app2vec_model_path = 'data/Model/app2vec.model',max_len = 5,af_model_path = 'data/Model/af_model.pkl')
+
+	# Goal: Find the best parameters
+	# With BILSTM, set lstm to True, vice versa.
+	# You can set ranker to 'mv'(major voting filter), 'doc'(semantic filter), 'mf'(matrix factorization filter)
+	af.AF(max_iter = [4000],
+	      preference = [-30,-40], 
+	      for_evaluate = True,
+	      lstm = True, 
+	      ranker = 'doc')
+
+	'''
+	ann = ANN(app2vec_model_path = 'data/Model/app2vec.model',ann_model_path = 'data/Model/ann_model.ann',max_len = 5)
+
+	# Goal: Find the best parameters
+	# With BILSTM, set lstm to True, vice versa.
+	# You can set ranker to 'mv'(major voting filter), 'doc'(semantic filter), 'mf'(matrix factorization filter)
 	
+	ann.ANN(num_tree = [18000],
+	        for_evaluate = True,
+	        lstm = False,
+		ranker = 'doc')
+	'''
 	
+	#ap = App2Vec()
+	#ap.training_App2Vec(app2vec_model_path = 'data/Model/app2vec.model')
 	
-	
-	
-	
-	
-	
+
+
