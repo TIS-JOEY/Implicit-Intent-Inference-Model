@@ -1,53 +1,72 @@
 # Scientific computing
-import pandas as pd
 import numpy as np
-from scipy.sparse import csr_matrix
-from scipy import spatial
+import pandas as pd
 
 # Model
 from gensim.models import Word2Vec
 import gensim
 from annoy import AnnoyIndex
-from sklearn.cluster import AffinityPropagation
-import wmf
 
 # Saver
-from sklearn.externals import joblib
-import pickle
 import json,io
-
-# Plot
-import matplotlib.pyplot as plt
-from sklearn.manifold import TSNE
-import matplotlib as mpl
-import matplotlib.dates as mdates
-from mpl_toolkits.mplot3d import Axes3D
-
-# Evaluating
-from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import TfidfVectorizer
-import app2vecEstimator
-from sklearn.model_selection import GridSearchCV, KFold
+from sklearn.externals import joblib
 
 # Others
 import collections
 import os
 import itertools
-import random
-import time
-
-# Preprocessing
-from nltk.tokenize import word_tokenize
-from sklearn.preprocessing import normalize
 
 # Keras
 from keras import backend as K
 from keras.preprocessing.sequence import pad_sequences
 from keras.layers import LSTM, Dense, Dropout, Bidirectional
-from keras.models import Sequential,load_model
-from keras.callbacks import EarlyStopping,ModelCheckpoint
-from keras.optimizers import Adam
-from keras.models import load_model
+from keras.models import load_model,Sequential
+
+
+
+if __name__ == '__main__':
+	# Scientific computing
+	from scipy.sparse import csr_matrix
+	from scipy import spatial
+
+	# Model
+	from sklearn.cluster import AffinityPropagation
+	import wmf
+
+	# Saver
+	import pickle
+
+	# Plot
+	import matplotlib.pyplot as plt
+	from sklearn.manifold import TSNE
+	import matplotlib as mpl
+	import matplotlib.dates as mdates
+	from mpl_toolkits.mplot3d import Axes3D
+
+	# Evaluating
+	from sklearn.model_selection import train_test_split
+	from sklearn.feature_extraction.text import TfidfVectorizer
+	from sklearn.model_selection import GridSearchCV, KFold
+	import app2vecEstimator
+
+
+	# Others
+	import random
+	import time
+
+	# Preprocessing
+	from nltk.tokenize import word_tokenize
+	from sklearn.preprocessing import normalize
+
+	# Keras
+	from keras.models import load_model
+	from keras.callbacks import EarlyStopping,ModelCheckpoint
+	from keras.optimizers import Adam
+else:
+	os.chdir('Training/')
+
+
+
 
 class processData:
 	def __init__(self, goal_app_path = 'data/goal_app.txt', mapping_path = 'data/training_data/apps.csv', ignore_all = False,app2vec_model_path = None):
@@ -86,44 +105,23 @@ class processData:
 	def load_training_data(self,raw_data_path):
 		with io.open(raw_data_path,'r',encoding = 'utf-8') as f:
 			self.training_data = json.load(f)
-		'''
-		rf = open(raw_data_path,'rb')
-		self.training_data = pickle.load(rf)
-		rf.close()
-		'''
 
 	def load_resource(self,raw_data_path):
 		result = []
 		with io.open(raw_data_path,'r',encoding = 'utf-8') as f:
 			result = json.load(f)
 
-		'''
-		rf = open(raw_data_path,'rb')
-		result = pickle.load(rf)
-		rf.close()
-		'''
 		return result
 
 	# save the training data for app2vec.
 	def save(self,data,write_file_path):
 		with io.open(write_file_path, 'w', encoding='utf-8') as f:
 			f.write(json.dumps(data, ensure_ascii=False))
-		'''
-		wf = open(write_file_path,'wb')
-		pickle.dump(data,wf)
-		wf.close()
-		'''
+
 	def saveToApp(self,data,write_file_path):
 		data = [[self.id2app[app] for app in row] for row in data]
 		with io.open(write_file_path, 'w', encoding='utf-8') as f:
 			f.write(json.dumps(data, ensure_ascii=False))
-		'''
-		wf = open(write_file_path,'wb')
-		data = [[self.id2app[app] for app in row] for row in data]
-		pickle.dump(data,wf)
-		wf.close()
-		'''
-
 
 	# load R1 resource
 	def processR1(self,R1_path,save = False):
@@ -160,8 +158,6 @@ class processData:
 						if len(result)>=2:
 							self.training_data.append(result)
 
-					#self.training_data.append([self.id2app[app] for ele_app_list in each_app_seq.tolist() for app in ele_app_list.split(' ') if self.id2app[app] in self.goal_app])
-
 			if save:
 				self.save(self.training_data[data_length:],'data/training_data/R1_data.txt')
 
@@ -195,11 +191,6 @@ class processData:
 			raw_data = [row.tolist()[0].split('\t') for index,row in df.iterrows()]
 
 			all_data = [(row[1],row[2]) for row in raw_data if ';' in row[1]]
-			
-
-			#data,text = map(list, zip(*all_data))
-
-			
 
 			#Full cut mode
 			if self.ignore_all:
@@ -223,8 +214,6 @@ class processData:
 					if len(result)>=2:
 						self.text.append(text)
 						self.training_data.append(result)
-
-				#self.training_data.append([app for ele_app_list in [row.split(' ')[1] for index,row in df.iterrows()] for app in each_app_list.split(';') if app not in self.stop_app])
 
 			if save:
 				self.save(self.training_data[data_length:],'data/training_data/R2_data.txt')
@@ -265,10 +254,6 @@ class processData:
 
 			all_data = [(row[1],row[2]) for row in raw_data if ';' in row[1]]
 
-			#data,text = map(list, zip(*all_data))
-
-			#self.text.extend(text)
-
 			#Full cut mode
 			if self.ignore_all:
 				for each_app_list in map(self._processR2,all_data):
@@ -291,8 +276,6 @@ class processData:
 					if len(result)>=2:
 						self.text.append(text)
 						self.training_data.append(result)
-
-				#self.training_data.append([app for ele_app_list in [row.split(' ')[1] for index,row in df.iterrows()] for app in each_app_list.split(';') if app not in self.stop_app])
 
 			if save:
 				self.save(self.training_data[data_length:],'data/training_data/R3_data.txt')
@@ -353,7 +336,7 @@ class processData:
 
 			return rating_matrix
 
-	def wmf_model(self,app2vec_model):
+	def wmf_model(self,app2vec_model,wmf_model_path = 'data/training_data/wmf_matrix.txt'):
 		length = len(app2vec_model.wv.syn0)
 
 		if not self.training_data:
@@ -388,6 +371,8 @@ class processData:
 		U, V = wmf.factorize(S, num_factors=41, lambda_reg=1e-5, num_iterations=1000, init_std=0.01, verbose=True, dtype='float32', recompute_factors=wmf.recompute_factors_bias)
 
 		result = np.dot(U,V.T)
+
+		self.save(result.tolist(),'data/Model/wmf_matrix.txt')
 		
 		return result
 
@@ -402,13 +387,6 @@ class processData:
 
 			# Transfer to Index
 			data = list(map(lambda x:self.app2vec_model.wv.vocab[x].index+1,i))
-
-			'''
-			half = len(i)//2
-			X.append(data[:half])
-			y.append(i[half:])
-			'''
-			
 			
 			for j in range(len(i)):
 				X.append([data[j]])
@@ -428,12 +406,6 @@ class processData:
 
 			# Transfer to Index
 			t_index = list(map(lambda x:self.app2vec_model.wv.vocab[x].index+1,data))
-			
-			'''
-			half = len(data)//2
-			X.append([t_index[:half],self.text[index]])
-			y.append(data[half:])
-			'''
 			
 			for j in range(len(data)):
 
@@ -638,10 +610,16 @@ class App2Vec(processData):
 		labels = []
 		tokens = []
 
+		'''
 		for word in model.wv.vocab:
 			tokens.append(model[word])
 			labels.append(word)
+		'''
 		
+		for word in model.most_similar('com.android.chrome',topn = 50):
+			tokens.append(model[word[0]])
+			labels.append(word[0])
+
 		tsne_model = TSNE(perplexity=40, n_components=2, init='pca', n_iter=2500, random_state=23)
 		new_values = tsne_model.fit_transform(tokens)
 
@@ -662,7 +640,7 @@ class App2Vec(processData):
 						 va='bottom')
 		plt.show()
 
-
+		
 	def grid_app2vec(self,**param):
 		'''
 		Find the best paramters for app2vec model.
@@ -801,7 +779,7 @@ class BILSTM:
 
 		X_test = np.zeros((1, self.max_len, self.vector_dim), dtype = np.float)
 
-		for k in range(max_len):
+		for k in range(self.max_len):
 			vector = X_vector[0][k]
 
 			for j in range(len(vector)):
@@ -814,7 +792,7 @@ class BILSTM:
 class WordSemantic:
 	def __init__(self):
 		self.shared_dict = {}
-		self.word2vec_model = gensim.models.KeyedVectors.load_word2vec_format('data/model/GoogleNews-vectors-negative300.bin',binary = True)
+		self.word2vec_model = gensim.models.KeyedVectors.load_word2vec_format('data/Model/GoogleNews-vectors-negative300.bin',binary = True)
 
 	def calculateJob(self,sen,candidate,candidate_description):
 
@@ -869,7 +847,8 @@ class AF(processData,BILSTM,WordSemantic):
 			af_training_data = []
 
 			if not self.training_data:
-				self.load_training_data('data/training_data/app2vec_training_data.txt')
+				self.setup_training_data()
+				#self.load_training_data('data/training_data/app2vec_training_data.txt')
 
 			#Average the vector of each app sequence as a unit
 			for app_seq in self.training_data:
@@ -878,7 +857,7 @@ class AF(processData,BILSTM,WordSemantic):
 			af_model = AffinityPropagation(max_iter = max_iter,preference = preference).fit(af_training_data)
 			
 			# save the model
-			joblib.dump(af_model, af_model_path)
+			joblib.dump(af_model, self.af_model_path)
 
 	def evaluate_af_mv(self,max_iter,preference):
 
@@ -1340,6 +1319,9 @@ class AF(processData,BILSTM,WordSemantic):
 		# load af model
 		af = joblib.load(self.af_model_path)
 
+		if not self.training_data:
+			self.setup_training_data()
+
 		# build a label2id dictionary
 		for index,label in enumerate(af.labels_):
 			self.label2app[label].extend(self.training_data[index])
@@ -1364,7 +1346,6 @@ class ANN(processData,BILSTM,WordSemantic):
 		return ann
 
 	def _ANN_builder(self,num_tree):
-		print(self.vector_dim)
 		ann_model = AnnoyIndex(self.vector_dim)
 		
 		vector = self.app2vec_model.wv.syn0
@@ -1404,7 +1385,8 @@ class ANN(processData,BILSTM,WordSemantic):
 				elif ranker == 'doc':
 					self.evaluate_ann_doc(num_trees = num_tree)
 		else:
-			self._ANN_builder(num_tree)
+			ann_model = self._ANN_builder(num_tree)
+			ann_model.save(self.ann_model_path)
 
 	def evaluate_ann_mv(self,num_trees):
 		'''
@@ -1871,4 +1853,16 @@ class MF:
 		"""
 		return self.b + self.b_u[:,np.newaxis] + self.b_i[np.newaxis:,] + self.P.dot(self.Q.T)	
 
+if __name__ == '__main__':
+	# -*- Train Affinity Propagation
+	af = AF(app2vec_model_path = 'data/Model/app2vec.model',max_len = 5,af_model_path = 'data/Model/af_model.pkl')
+
+	# Goal: Find the best parameters
+	# With BILSTM, set lstm to True, vice versa.
+	# You can set ranker to 'mv'(major voting filter), 'doc'(semantic filter), 'mf'(matrix factorization filter)
+	af.AF(max_iter = [1],
+	      preference = [-2,-3], 
+	      for_evaluate = True,
+	      lstm = False, 
+	      ranker = 'mv')
 
