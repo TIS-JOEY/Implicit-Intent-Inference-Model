@@ -31,7 +31,7 @@ Download GoogleNews word2vec --> https://github.com/mmihaltz/word2vec-GoogleNews
 After unzipping it, put it to 'data/Model/' directory.
 
 # Usage
-## Execute
+## Training
 ```
 Execute Training/Model.py
 ```
@@ -106,6 +106,9 @@ af.AF(max_iter = 4000,preference = -30,for_evaluate = False)
 ```
 
 ## Predict
+```
+Execute main.py
+```
 ```
 # Load the app's description
 data = {}
