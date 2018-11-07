@@ -115,14 +115,19 @@ data = {}
 with open(r'Training/data/Model/app2des.json','r',encoding = 'utf-8') as f:
 	data = json.load(f)
 
-# Load the app2class
+# Load the mapping of explict intent and apps
 mapping = {}
 with open(r'Training/data/Model/app_mapping.json','r',encoding = 'utf-8') as f:
 	mapping = json.load(f)
 
-
+# If someone's intent is 問路
 imip = IMIP(explicit_intent = ['問路'],intentApp = mapping,app2vec_model_path = r'Training/data/Model/app2vec.model',ann_model_path = r'Training/data/Model/ann_model.ann',af_model_path = r'Training/data/Model/af_model.pkl',app2des = data)
 
+# If someone says 我想要去公園吃飯和玩
+# The parameter:
+# model : ANN or AF
+# ranker : mv, mf or doc
+# lstm : True or False
 print(imip.query(HanziConv.toSimplified('我想要去公園吃飯和玩'),model = 'ANN',ranker = 'doc',lstm = False))
 
 ```
