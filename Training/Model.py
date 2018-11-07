@@ -1853,16 +1853,4 @@ class MF:
 		"""
 		return self.b + self.b_u[:,np.newaxis] + self.b_i[np.newaxis:,] + self.P.dot(self.Q.T)	
 
-if __name__ == '__main__':
-	# -*- Train Affinity Propagation
-	af = AF(app2vec_model_path = 'data/Model/app2vec.model',max_len = 5,af_model_path = 'data/Model/af_model.pkl')
-
-	# Goal: Find the best parameters
-	# With BILSTM, set lstm to True, vice versa.
-	# You can set ranker to 'mv'(major voting filter), 'doc'(semantic filter), 'mf'(matrix factorization filter)
-	af.AF(max_iter = [1],
-	      preference = [-2,-3], 
-	      for_evaluate = True,
-	      lstm = False, 
-	      ranker = 'mv')
 
