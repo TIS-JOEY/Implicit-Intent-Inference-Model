@@ -61,7 +61,7 @@ bilstm = BILSTM(app2vec_model_path = 'data/Model/app2vec.model',max_len = 5)
 bilstm.get_model(epochs = 50,batch_size = 30)
 ```
 
-## Matrix Factorization
+## Weighted Matrix Factorization
 ```
 p_data = processData()
 
