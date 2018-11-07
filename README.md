@@ -68,11 +68,7 @@ p_data = processData()
 app2vec_model = Word2Vec.load('data/Model/app2vec.model')
 
 # Train the Matrix Factorization model.
-p_data.mf_model(app2vec_model = app2vec_model, 
-		K = 2, alpha = 0.1, 
-		beta = 0.01, 
-		iterations = 1000, 
-		retrain = True)
+p_data.wmf_model(app2vec_model = app2vec_model)
 ```
 
 ## ANN
