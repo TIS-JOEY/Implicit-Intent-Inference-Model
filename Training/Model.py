@@ -67,6 +67,21 @@ else:
 
 
 
+all_class = {'Music & Audio', 'Sports', 'Tools', 'Books & Reference', 'Event', 'Weather', 'News & Magazines', 'Game', 'Media & Video', 'Photography', 'Food & Drink', 'Video Players & Editors', 'Productivity', 'Maps & Navigation', 'Health & Fitness', 'Social', 'Lifestyle', 'Business', 'Finance', 'Shopping', 'Travel & Local', 'Entertainment', 'Education', 'Communication'}
+def evaluate_result(pred,true):
+	pred = set(pred)
+	true = set(true)
+	TP = len(pred.intersection(true))
+	TN = len((all_class-pred).intersection(all_class-true))
+	FP = len(pred-true)
+	FN = len((all_class-pred) - (all_class-true))
+
+	accuracy = (TP+TN)/(TP+TN+FP+FN)
+	precision = TP/(TP+FP)
+	recall = TP/(TP+FN)
+
+	return accuracy,precision,recall
+
 
 class processData:
 	def __init__(self, goal_app_path = 'data/goal_app.txt', mapping_path = 'data/training_data/apps.csv', ignore_all = False,app2vec_model_path = None):
@@ -372,7 +387,7 @@ class processData:
 
 		result = np.dot(U,V.T)
 
-		self.save(result.tolist(),'data/Model/wmf_matrix.txt')
+		#self.save(result.tolist(),'data/Model/wmf_matrix.txt')
 		
 		return result
 
@@ -434,7 +449,7 @@ class processData:
 				self.save(self.app2des,'data/training_data/app2des.txt')
 		
 	def checkClass(self,filter_result,length):
-		'''
+		
 		result_count = 0
 		run_count = 0
 		result = []
@@ -444,9 +459,10 @@ class processData:
 				result.append(self.app2class[filter_result[run_count]])
 				result_count+=1
 			run_count+=1
-		'''
+		
 		#print(len(filter_result),length)
-		return list(set([self.app2class[i] for i in filter_result]))[:5]
+		return result
+		#return list(set([self.app2class[i] for i in filter_result]))[:5]
 
 	def prepare_BI_LSTM_training_data(self,app2vec_model,max_len = 5,test_size = 0.1):
 		'''
@@ -890,7 +906,8 @@ class AF(processData,BILSTM,WordSemantic):
 				# For calculating the accuracy
 				sum = 0
 				total_num = 0
-				
+				accuracy,precision,recall = 0,0,0
+
 				for app_seq_id in range(len(X_test)):
 					
 					# Get the input vector
@@ -911,21 +928,30 @@ class AF(processData,BILSTM,WordSemantic):
 					result = self.checkClass(major_voting_filter,len(y))
 
 					# Count the correct records
-					sum+=len(set(result).intersection(y))
+					#sum+=len(set(result).intersection(y))
 
 					# Count the total number
-					total_num+=len(y)
+					#total_num+=len(y)
+					acc,prec,rec = evaluate_result(result,y)
+					accuracy+=acc
+					precision+=prec
+					recall+=rec
+					total_num+=1
 
-				print('max_iter = ',max_iter_param)
-				print('preference = ',preference_param)
-				print('accuracy = ',sum/total_num)
 				
+				print('accuracy = ',accuracy/total_num)
+				print('precision = ',precision/total_num)
+				print('recall = ',recall/total_num)
+
+				#print('max_iter = ',max_iter_param)
+				#print('preference = ',preference_param)
+				#print('accuracy = ',sum/total_num)
 
 				# Record the accuracy.
-				cv_result[max_iter_param].append((preference_param,sum/(total_num)))
+				#cv_result[max_iter_param].append((preference_param,sum/(total_num)))
 					
 		# Make Plot
-		self.plot_af(cv_result)
+		#self.plot_af(cv_result)
 
 	def evaluate_af_mf(self,max_iter,preference):
 
@@ -961,7 +987,8 @@ class AF(processData,BILSTM,WordSemantic):
 				# For calculating the accuracy
 				sum = 0
 				total_num = 0
-				
+				accuracy,precision,recall = 0,0,0
+
 				for app_seq_id in range(len(X_test)):
 					
 					# Get the input vector
@@ -981,22 +1008,32 @@ class AF(processData,BILSTM,WordSemantic):
 					result = self.checkClass(mf_filter,len(y))
 
 					# Count the correct records
-					sum+=len(set(result).intersection(y))
+					#sum+=len(set(result).intersection(y))
 
 					# Count the total number
-					total_num+=len(y)
+					#total_num+=len(y)
+					acc,prec,rec = evaluate_result(result,y)
+					accuracy+=acc
+					precision+=prec
+					recall+=rec
+					total_num+=1
+					
+				
+				print('accuracy = ',accuracy/total_num)
+				print('precision = ',precision/total_num)
+				print('recall = ',recall/total_num)
 
 
-				print('max_iter = ',max_iter_param)
-				print('preference = ',preference_param)
-				print('accuracy = ',sum/total_num)
+				#print('max_iter = ',max_iter_param)
+				#print('preference = ',preference_param)
+				#print('accuracy = ',sum/total_num)
 				
 
 				# Record the accuracy.
-				cv_result[max_iter_param].append((preference_param,sum/(total_num)))
+				#cv_result[max_iter_param].append((preference_param,sum/(total_num)))
 					
 		# Make Plot
-		self.plot_af(cv_result)
+		#self.plot_af(cv_result)
 
 	def evaluate_af_doc(self,max_iter,preference):
 
@@ -1031,6 +1068,7 @@ class AF(processData,BILSTM,WordSemantic):
 				# For calculating the accuracy
 				sum = 0
 				total_num = 0
+				accuracy,precision,recall = 0,0,0
 
 				for app_seq_id in range(len(X_test_data)):
 					# For recording the semantic score
@@ -1058,20 +1096,30 @@ class AF(processData,BILSTM,WordSemantic):
 					result = self.checkClass(semantic_filter,len(y))
 
 					# Count the correct records
-					sum+=len(set(result).intersection(y))
+					#sum+=len(set(result).intersection(y))
 
 					# Count the total number
-					total_num+=len(y)
+					#total_num+=len(y)
+					acc,prec,rec = evaluate_result(result,y)
+					accuracy+=acc
+					precision+=prec
+					recall+=rec
+					total_num+=1
+					
+				
+				print('accuracy = ',accuracy/total_num)
+				print('precision = ',precision/total_num)
+				print('recall = ',recall/total_num)
 
-				print('max_iter = ',max_iter_param)
-				print('preference = ',preference_param)
-				print('accuracy = ',sum/total_num)
+				#print('max_iter = ',max_iter_param)
+				#print('preference = ',preference_param)
+				#print('accuracy = ',sum/total_num)
 
 				# Record the accuracy.
-				cv_result[max_iter_param].append((preference_param,sum/(total_num)))
+				#cv_result[max_iter_param].append((preference_param,sum/(total_num)))
 					
 		# Make Plot
-		self.plot_af(cv_result)
+		#self.plot_af(cv_result)
 		
 	def evaluate_AF_BILSTM_mv(self,max_iter,preference,for_evaluate):
 		
@@ -1103,7 +1151,8 @@ class AF(processData,BILSTM,WordSemantic):
 				# For calculating the accuracy
 				sum = 0
 				total_num = 0
-				
+				accuracy,precision,recall = 0,0,0
+
 				for app_seq_id in range(len(X_test)):
 					
 					X = np.array([X_test[app_seq_id]])
@@ -1126,21 +1175,30 @@ class AF(processData,BILSTM,WordSemantic):
 					result = self.checkClass(major_voting_filter,len(y))
 
 					# Count the correct records
-					sum+=len(set(result).intersection(y))
+					#sum+=len(set(result).intersection(y))
 
 					# Count the total number
-					total_num+=len(y)
+					#total_num+=len(y)
+					acc,prec,rec = evaluate_result(result,y)
+					accuracy+=acc
+					precision+=prec
+					recall+=rec
+					total_num+=1
+					
+				print('accuracy = ',accuracy/total_num)
+				print('precision = ',precision/total_num)
+				print('recall = ',recall/total_num)
 
-				print('max_iter = ',max_iter_param)
-				print('preference = ',preference_param)
-				print('accuracy = ',sum/total_num)
+				#print('max_iter = ',max_iter_param)
+				#print('preference = ',preference_param)
+				#print('accuracy = ',sum/total_num)
 					
 
 				# Record the accuracy.
-				cv_result[max_iter_param].append((preference_param,sum/(total_num)))
+				#cv_result[max_iter_param].append((preference_param,sum/(total_num)))
 					
 		# Make Plot
-		self.plot_af(cv_result)
+		#self.plot_af(cv_result)
 
 	def evaluate_AF_BILSTM_mf(self,max_iter,preference,for_evaluate):
 		
@@ -1175,7 +1233,8 @@ class AF(processData,BILSTM,WordSemantic):
 				# For calculating the accuracy
 				sum = 0
 				total_num = 0
-				
+				accuracy,precision,recall = 0,0,0
+
 				for app_seq_id in range(len(X_test)):
 					
 					X = np.array([X_test[app_seq_id]])
@@ -1197,21 +1256,30 @@ class AF(processData,BILSTM,WordSemantic):
 					result = self.checkClass(mf_filter,len(y))
 
 					# Count the correct records
-					sum+=len(set(result).intersection(y))
+					#sum+=len(set(result).intersection(y))
 
 					# Count the total number
-					total_num+=len(y)
+					#total_num+=len(y)
+					acc,prec,rec = evaluate_result(result,y)
+					accuracy+=acc
+					precision+=prec
+					recall+=rec
+					total_num+=1
+					
+				print('accuracy = ',accuracy/total_num)
+				print('precision = ',precision/total_num)
+				print('recall = ',recall/total_num)
 
-				print('max_iter = ',max_iter_param)
-				print('preference = ',preference_param)
-				print('accuracy = ',sum/total_num)
+				#print('max_iter = ',max_iter_param)
+				#print('preference = ',preference_param)
+				#print('accuracy = ',sum/total_num)
 					
 
 				# Record the accuracy.
-				cv_result[max_iter_param].append((preference_param,sum/(total_num)))
+				#cv_result[max_iter_param].append((preference_param,sum/(total_num)))
 					
 		# Make Plot
-		self.plot_af(cv_result)
+		#self.plot_af(cv_result)
 	
 	def evaluate_AF_BILSTM_doc(self,max_iter,preference,for_evaluate):
 
@@ -1244,7 +1312,8 @@ class AF(processData,BILSTM,WordSemantic):
 				# For calculating the accuracy
 				sum = 0
 				total_num = 0
-				
+				accuracy,precision,recall = 0,0,0
+
 				for app_seq_id in range(len(X_test)):
 					# For recording the semantic score
 					self.shared_dict = dict()
@@ -1273,20 +1342,30 @@ class AF(processData,BILSTM,WordSemantic):
 					result = self.checkClass(semantic_filter,len(y))
 
 					# Count the correct records
-					sum+=len(set(result).intersection(y))
+					#sum+=len(set(result).intersection(y))
 
 					# Count the total number
-					total_num+=len(y)
+					#total_num+=len(y)
+					acc,prec,rec = evaluate_result(result,y)
+					accuracy+=acc
+					precision+=prec
+					recall+=rec
+					total_num+=1
 
-				print('max_iter = ',max_iter_param)
-				print('preference = ',preference_param)
-				print('accuracy = ',sum/total_num)
+				
+				print('accuracy = ',accuracy/total_num)
+				print('precision = ',precision/total_num)
+				print('recall = ',recall/total_num)
+
+				#print('max_iter = ',max_iter_param)
+				#print('preference = ',preference_param)
+				#print('accuracy = ',sum/total_num)
 
 				# Record the accuracy.
-				cv_result[max_iter_param].append((preference_param,sum/(total_num)))
+				#cv_result[max_iter_param].append((preference_param,sum/(total_num)))
 					
 		# Make Plot
-		self.plot_af(cv_result)
+		#self.plot_af(cv_result)
 
 	def plot_af(self,cv_result):
 		# Get Test Scores Mean and std for each grid search
@@ -1408,6 +1487,7 @@ class ANN(processData,BILSTM,WordSemantic):
 			# For calculating the accuracy
 			sum = 0
 			total_num = 0
+			accuracy,precision,recall = 0,0,0
 
 			for app_seq_id in range(len(X_test)):
 
@@ -1428,23 +1508,36 @@ class ANN(processData,BILSTM,WordSemantic):
 				result = self.checkClass(major_voting_filter,len(y_compare))
 
 				# Count the correct records
-				sum+=len(set(result).intersection(y_compare))
+				#sum+=len(set(result).intersection(y_compare))
 
 				# Count the total number
-				total_num+=len(y_compare)
+				#total_num+=len(y_compare)
+
+				acc,prec,rec = evaluate_result(result,y_compare)
+				accuracy+=acc
+				precision+=prec
+				recall+=rec
+				# Count the total number
+
+				total_num+=1
+				
+			print('num_tree = ',num_tree)
+			print('accuracy = ',accuracy/total_num)
+			print('precision = ',precision/total_num)
+			print('recall = ',recall/total_num)
 
 			print('num_tree = ',num_tree)
 			print('accuracy = ',sum/total_num)
 			print()
 
 			# Record the accuracy
-			self.ann_accuracy.append(sum/total_num)
+			#self.ann_accuracy.append(sum/total_num)
 
 			# Record the parameters
-			self.ann_num_trees.append(num_tree)
+			#self.ann_num_trees.append(num_tree)
 
 		# Make Plot
-		self.evaluate_ann_make_plot()
+		#self.evaluate_ann_make_plot()
 
 	def evaluate_ann_doc(self,num_trees):
 		'''
@@ -1468,6 +1561,7 @@ class ANN(processData,BILSTM,WordSemantic):
 			# For calculating the accuracy
 			sum = 0
 			total_num = 0
+			accuracy,precision,recall = 0,0,0
 
 			for app_seq_id in range(len(X_test_data)):
 				
@@ -1494,23 +1588,36 @@ class ANN(processData,BILSTM,WordSemantic):
 				result = self.checkClass(semantic_filter,len(y))
 
 				# Count the correct records
-				sum+=len(set(result).intersection(y))
+				#sum+=len(set(result).intersection(y))
 
 				# Count the total number
-				total_num+=len(y)
+				#total_num+=len(y)
+
+				acc,prec,rec = evaluate_result(result,y)
+				accuracy+=acc
+				precision+=prec
+				recall+=rec
+				# Count the total number
+				#total_num+=len(y)
+				total_num+=1
 				
 			print('num_tree = ',num_tree)
-			print('accuracy = ',sum/total_num)
-			print()
+			print('accuracy = ',accuracy/total_num)
+			print('precision = ',precision/total_num)
+			print('recall = ',recall/total_num)
+				
+			#print('num_tree = ',num_tree)
+			#print('accuracy = ',sum/total_num)
+			#print()
 
 			# Record the accuracy
-			self.ann_accuracy.append(sum/total_num)
+			#self.ann_accuracy.append(sum/total_num)
 
 			# Record the parameters
-			self.ann_num_trees.append(num_tree)
+			#self.ann_num_trees.append(num_tree)
 
 		# Make Plot
-		self.evaluate_ann_make_plot()
+		#self.evaluate_ann_make_plot()
 
 	def evaluate_ann_mf(self,num_trees):
 		'''
@@ -1535,6 +1642,7 @@ class ANN(processData,BILSTM,WordSemantic):
 			# For calculating the accuracy
 			sum = 0
 			total_num = 0
+			accuracy,precision,recall = 0,0,0
 
 			for app_seq_id in range(len(X_test)):
 
@@ -1553,24 +1661,36 @@ class ANN(processData,BILSTM,WordSemantic):
 				result = self.checkClass(mf_filter,len(y))
 
 				# Count the correct records
-				sum+=len(set(result).intersection(y))
+				#sum+=len(set(result).intersection(y))
 
 				# Count the total number
-				total_num+=len(y)
-
-
+				#total_num+=len(y)
+				acc,prec,rec = evaluate_result(result,y)
+				accuracy+=acc
+				precision+=prec
+				recall+=rec
+				# Count the total number
+				#total_num+=len(y)
+				total_num+=1
+				
 			print('num_tree = ',num_tree)
-			print('accuracy = ',sum/total_num)
-			print()
+			print('accuracy = ',accuracy/total_num)
+			print('precision = ',precision/total_num)
+			print('recall = ',recall/total_num)
+
+
+			#print('num_tree = ',num_tree)
+			#print('accuracy = ',sum/total_num)
+			#print()
 
 			# Record the accuracy
-			self.ann_accuracy.append(sum/total_num)
+			#self.ann_accuracy.append(sum/total_num)
 
 			# Record the parameters
-			self.ann_num_trees.append(num_tree)
+			#self.ann_num_trees.append(num_tree)
 
 		# Make Plot
-		self.evaluate_ann_make_plot()
+		#self.evaluate_ann_make_plot()
 
 	def evaluate_ANN_BILSTM_mv(self,num_trees,for_evaluate):
 
@@ -1588,6 +1708,7 @@ class ANN(processData,BILSTM,WordSemantic):
 			# For calculating the accuracy
 			sum = 0
 			total_num = 0
+			accuracy,precision,recall = 0,0,0
 
 			for app_seq_id in range(len(X_test)):
 				
@@ -1612,23 +1733,35 @@ class ANN(processData,BILSTM,WordSemantic):
 				result = self.checkClass(major_voting_filter,len(y))
 
 				# Count the correct records
-				sum+=len(set(result).intersection(y))
+				#sum+=len(set(result).intersection(y))
 
 				# Count the total number
-				total_num+=len(y)
+				#total_num+=len(y)
+
+				acc,prec,rec = evaluate_result(result,y)
+				accuracy+=acc
+				precision+=prec
+				recall+=rec
+				total_num+=1
 				
 			print('num_tree = ',num_tree)
-			print('accuracy = ',sum/total_num)
+			print('accuracy = ',accuracy/total_num)
+			print('precision = ',precision/total_num)
+			print('recall = ',recall/total_num)
 			print()
+				
+			#print('num_tree = ',num_tree)
+			#print('accuracy = ',sum/total_num)
+			#print()
 
 			# Record the accuracy
-			self.ann_accuracy.append(sum/total_num)
+			#self.ann_accuracy.append(sum/total_num)
 
 			# Record the parameters
-			self.ann_num_trees.append(num_tree)
+			#self.ann_num_trees.append(num_tree)
 
 		# Make Plot
-		self.evaluate_ann_make_plot()
+		#self.evaluate_ann_make_plot()
 
 	def evaluate_ANN_BILSTM_doc(self,num_trees,for_evaluate):
 
@@ -1646,6 +1779,7 @@ class ANN(processData,BILSTM,WordSemantic):
 			# For calculating the accuracy
 			sum = 0
 			total_num = 0
+			accuracy,precision,recall = 0,0,0
 
 			for app_seq_id in range(len(X_test)):
 
@@ -1675,23 +1809,34 @@ class ANN(processData,BILSTM,WordSemantic):
 				result = self.checkClass(semantic_filter,len(y))
 
 				# Count the correct records
-				sum+=len(set(result).intersection(y))
+				#sum+=len(set(result).intersection(y))
 
 				# Count the total number
-				total_num+=len(y)
-			
+				#total_num+=len(y)
+
+				acc,prec,rec = evaluate_result(result,y)
+				accuracy+=acc
+				precision+=prec
+				recall+=rec
+				total_num+=1
+				
 			print('num_tree = ',num_tree)
-			print('accuracy = ',sum/total_num)
-			print()
+			print('accuracy = ',accuracy/total_num)
+			print('precision = ',precision/total_num)
+			print('recall = ',recall/total_num)
+			
+			#print('num_tree = ',num_tree)
+			#print('accuracy = ',sum/total_num)
+			#print()
 
 			# Record the accuracy
-			self.ann_accuracy.append(sum/total_num)
+			#self.ann_accuracy.append(sum/total_num)
 
 			# Record the parameters
-			self.ann_num_trees.append(num_tree)
+			#self.ann_num_trees.append(num_tree)
 
 		# Make Plot
-		self.evaluate_ann_make_plot()
+		#self.evaluate_ann_make_plot()
 
 	def evaluate_ANN_BILSTM_mf(self,num_trees,for_evaluate):
 
@@ -1712,6 +1857,7 @@ class ANN(processData,BILSTM,WordSemantic):
 			# For calculating the accuracy
 			sum = 0
 			total_num = 0
+			accuracy,precision,recall = 0,0,0
 
 			for app_seq_id in range(len(X_test)):
 				
@@ -1733,23 +1879,37 @@ class ANN(processData,BILSTM,WordSemantic):
 				result = self.checkClass(mf_filter,len(y))
 
 				# Count the correct records
-				sum+=len(set(result).intersection(y))
+				#sum+=len(set(result).intersection(y))
 
 				# Count the total number
-				total_num+=len(y)
+				#total_num+=len(y)
+
+				acc,prec,rec = evaluate_result(result,y)
+				accuracy+=acc
+				precision+=prec
+				recall+=rec
+				# Count the total number
+				#total_num+=len(y)
+				total_num+=1
+				
 				
 			print('num_tree = ',num_tree)
-			print('accuracy = ',sum/total_num)
-			print()
+			print('accuracy = ',accuracy/total_num)
+			print('precision = ',precision/total_num)
+			print('recall = ',recall/total_num)
+				
+			#print('num_tree = ',num_tree)
+			#print('accuracy = ',sum/total_num)
+			#print()
 
 			# Record the accuracy
-			self.ann_accuracy.append(sum/total_num)
+			#self.ann_accuracy.append(sum/total_num)
 
 			# Record the parameters
-			self.ann_num_trees.append(num_tree)
+			#self.ann_num_trees.append(num_tree)
 
 		# Make Plot
-		self.evaluate_ann_make_plot()
+		#self.evaluate_ann_make_plot()
 
 	def evaluate_ann_make_plot(self):
 		'''
@@ -1852,5 +2012,6 @@ class MF:
 		Computer the full matrix using the resultant biases, P and Q
 		"""
 		return self.b + self.b_u[:,np.newaxis] + self.b_i[np.newaxis:,] + self.P.dot(self.Q.T)	
+	
 
 
